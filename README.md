@@ -1,4 +1,4 @@
-# example_1
+# Moojik app
 
 A new Flutter project.
 
