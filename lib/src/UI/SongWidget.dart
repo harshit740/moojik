@@ -62,7 +62,7 @@ class SongWidget extends StatelessWidget {
   }
 
   getAddtoLikeIcon(song, context) {
-    if (this.parentWIdgetname == 'SearchView') {
+    if (this.parentWIdgetname == 'Searched Songs') {
       return GestureDetector(
           onTap: () => addToPlayList(song, context),
           child: Icon(Icons.library_add));
@@ -78,7 +78,7 @@ class SongWidget extends StatelessWidget {
     return Container(
         padding: EdgeInsets.all(15.0),
         child: InkWell(
-            onTap: () => _myService.playOneSong(song),
+            onTap: () => _myService.playOneSong(song,parentWIdgetname),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[

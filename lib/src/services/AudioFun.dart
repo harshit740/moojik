@@ -7,13 +7,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AudioFun extends BaseService {
   static const platformMethodChannel =
-      const MethodChannel('com.moojikflux/music');
+  const MethodChannel('com.moojikflux/music');
   Song oneSong;
 
   List<Song> songQueue = [];
+
   AudioFun() {
     platformMethodChannel.setMethodCallHandler(_handleMethod);
   }
+
   @override
   Future<void> startAudioService() async {
     await AudioService.start(
@@ -31,7 +33,7 @@ class AudioFun extends BaseService {
     String _message;
     try {
       final String result =
-          await platformMethodChannel.invokeMethod('getYoutubeLenk', url);
+      await platformMethodChannel.invokeMethod('getYoutubeLenk', url);
       _message = result;
     } on PlatformException catch (e) {
       _message = "Problem Retriving Lenk: ${e.message}.";
@@ -48,28 +50,18 @@ class AudioFun extends BaseService {
   }
 
   @override
-  playOneSong(Song song) async {
-    this.oneSong = song;
-    final prefs = await SharedPreferences.getInstance();
-    List<String> data = prefs.getStringList(song.youtubeUrl);
-    if (data != null) {
-      if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 12) {
-        return getYoutubeLenk(song.youtubeUrl.split("/watch?v=")[1]);
-      }
-      if (!AudioService.running) {
-        await startAudioService();
-      }
-      await AudioService.addQueueItem(MediaItem(
-          id: data[0],
-          title: oneSong.title,
-          album: "Singales",
-          artUri: data[1],
-          displaySubtitle: oneSong.title,
-          extras: {"youtubeUrl": oneSong.youtubeUrl}));
-      await AudioService.skipToNext();
-    } else {
-      getYoutubeLenk(song.youtubeUrl.split("/watch?v=")[1]);
+  playOneSong(Song song, String album) async {
+    if (!AudioService.running) {
+      await startAudioService();
     }
+    await AudioService.addQueueItem(MediaItem(
+        id: song.youtubeUrl,
+        title: song.title,
+        album: album,
+        artUri: "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+        displaySubtitle: song.title,
+        extras: {"youtubeUrl": song.youtubeUrl}));
+    await AudioService.skipToNext();
   }
 
   void setUrl(arguments) async {

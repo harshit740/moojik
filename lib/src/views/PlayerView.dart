@@ -1,14 +1,13 @@
 import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/material.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
-import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:moojik/src/bloc/playerBloc.dart';
 
 class PlayerView extends StatefulWidget {
   @override
@@ -26,6 +25,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   int isRepeatMode;
   var som;
   bool isGetigFromYoutube = false;
+
   void setRepeat(int repeatmode) async {
     final prefs = await SharedPreferences.getInstance();
     var data = await prefs.setInt("isRepeatMode", repeatmode);
@@ -56,7 +56,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
           centerTitle: true,
           title: Text("Playing from some Library"),
           elevation: 10,
-          backgroundColor: Colors.black26,
+          backgroundColor: Colors.black12,
           actions: <Widget>[
             FlatButton(
               child: Icon(Icons.file_download),
@@ -83,45 +83,60 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                   final basicState =
                       state?.basicState ?? BasicPlaybackState.none;
                   if (snapshot.hasData) {
-                    return Column(
+                    return Container(
+                        child: Column(
                       children: <Widget>[
                         Container(
                             padding: EdgeInsets.all(20),
-                            margin: EdgeInsets.only(top: 5, bottom: 20),
+                            margin: EdgeInsets.only(top: 10, bottom: 15),
                             child: Center(
-                              child: getArt(mediaItem),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(59.0)),
+                                  color: Colors.redAccent,
+                                  backgroundBlendMode: BlendMode.colorDodge
+                                ),
+                                child: getArt(mediaItem),)
                             )),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            if (mediaItem != null &&
-                                mediaItem.title != null) ...[
-                              Text(
-                                "${mediaItem.title}",
-                                maxLines: 1,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 25),
-                              ),
-                            ] else if (mediaItem == null) ...[
-                              Text(
-                                "Welcome Nigga",
-                                maxLines: 1,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 25),
-                              ),
-                            ],
-                          ],
-                        ),
+                        Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                if (mediaItem != null &&
+                                    mediaItem.title != null) ...[
+                                  Center(
+                                    child: Text(
+                                      "${mediaItem.title.toString().split("- Duration")[0]}",
+                                      textAlign: TextAlign.center,
+                                      softWrap: true,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 23),
+                                    ),
+                                  )
+                                ] else if (mediaItem == null) ...[
+                                  Text(
+                                    "Welcome Nigga",
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 25),
+                                  ),
+                                ],
+                              ],
+                            )),
                         if (basicState != BasicPlaybackState.none &&
                             basicState != BasicPlaybackState.stopped) ...[
                           Container(
-                            width: 400,
+                            width: MediaQuery.of(context).size.width,
                             child: positionIndicator(mediaItem, state),
                           )
                         ],
                         Flex(
+                          mainAxisSize: MainAxisSize.min,
                           direction: Axis.horizontal,
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
@@ -132,23 +147,15 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                               ),
                               onTap: () {},
                             ),
-                            if (basicState ==
-                                    BasicPlaybackState.skippingToPrevious ||
-                                basicState ==
-                                    BasicPlaybackState.skippingToQueueItem ||
-                                isGetigFromYoutube) ...[
-                              CircularProgressIndicator(),
-                            ] else ...[
-                              FlatButton(
-                                child: Icon(
-                                  Icons.skip_previous,
-                                  size: 50,
-                                ),
-                                onPressed: () {
-                                  AudioService.skipToPrevious();
-                                },
+                            FlatButton(
+                              child: Icon(
+                                Icons.skip_previous,
+                                size: 50,
                               ),
-                            ],
+                              onPressed: () {
+                                AudioService.skipToPrevious();
+                              },
+                            ),
                             if (basicState == BasicPlaybackState.none) ...[
                               startButton(),
                             ] else if (basicState ==
@@ -167,30 +174,22 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                     BasicPlaybackState.skippingToPrevious) ...[
                               CircularProgressIndicator()
                             ],
-                            if (basicState ==
-                                    BasicPlaybackState.skippingToNext ||
-                                basicState ==
-                                    BasicPlaybackState.skippingToQueueItem ||
-                                isGetigFromYoutube) ...[
-                              CircularProgressIndicator(),
-                            ] else ...[
-                              FlatButton(
-                                child: Icon(
-                                  Icons.skip_next,
-                                  size: 50,
-                                ),
-                                onPressed: () {
-                                  try {
-                                    if (!AudioService.running) {
-                                      _myService.startAudioService();
-                                    }
-                                    AudioService.skipToNext();
-                                  } catch (e) {
-                                    print(e);
+                            FlatButton(
+                              child: Icon(
+                                Icons.skip_next,
+                                size: 50,
+                              ),
+                              onPressed: () {
+                                try {
+                                  if (!AudioService.running) {
+                                    _myService.startAudioService();
                                   }
-                                },
-                              )
-                            ],
+                                  AudioService.skipToNext();
+                                } catch (e) {
+                                  print(e);
+                                }
+                              },
+                            ),
                             if (isRepeatMode == 1) ...[
                               InkWell(
                                 child: Icon(
@@ -225,7 +224,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                           ],
                         )
                       ],
-                    );
+                    ));
                   } else {
                     return Center(child: Text('No media is currently Playing'));
                   }
@@ -243,15 +242,27 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
         double position = snapshot.data ?? state.currentPosition.toDouble();
         double duration = mediaItem?.duration?.toDouble();
         if (duration != null) {
+          String twoDigitSeconds = twoDigits(
+              Duration(milliseconds: duration.toInt()).inSeconds.remainder(60));
+          String twoDigitMinutes = twoDigits(
+              Duration(milliseconds: duration.toInt()).inMinutes.remainder(60));
+          String twoDigitSecondss = twoDigits(
+              Duration(milliseconds: state.currentPosition.toInt())
+                  .inSeconds
+                  .remainder(60));
+          String twoDigitMinutess = twoDigits(
+              Duration(milliseconds: state.currentPosition.toInt())
+                  .inMinutes
+                  .remainder(60));
           return Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
+              //state.currentPosition / 1000
               children: <Widget>[
-                Text(
-                    "${Duration(minutes: int.tryParse((state.currentPosition / 1000).toStringAsFixed(0))).inSeconds}"),
+                Text("$twoDigitMinutess:$twoDigitSecondss"),
                 Container(
-                  width: 250,
+                  width: MediaQuery.of(context).size.width - 100,
                   child: Slider(
                     activeColor: Colors.white,
                     min: 0.0,
@@ -268,13 +279,18 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                     },
                   ),
                 ),
-                Text("${Duration(milliseconds: duration.toInt()).inMinutes}"),
+                Text("$twoDigitMinutes:$twoDigitSeconds")
               ]);
         } else {
           return Divider();
         }
       },
     );
+  }
+
+  String twoDigits(int n) {
+    if (n >= 10) return "$n";
+    return "0$n";
   }
 
   GestureDetector startButton() => GestureDetector(
@@ -297,6 +313,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
         ),
         onTap: AudioService.play,
       );
+
   GestureDetector pauseButton() => GestureDetector(
         child: Icon(
           Icons.pause_circle_filled,
@@ -304,6 +321,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
         ),
         onTap: AudioService.pause,
       );
+
   GestureDetector stopButton() => GestureDetector(
         child: Icon(
           Icons.stop,

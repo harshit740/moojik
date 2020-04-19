@@ -8,9 +8,6 @@ import 'SongWidget.dart';
 
 class SongList extends StatelessWidget {
   final List<Song> playList;
-  final methodChannel = MethodChannel('music');
-  static const platformMethodChannel = const MethodChannel('music');
-  static const platform = const MethodChannel('music');
   var _myService = locator<BaseService>();
   SongList({Key key, this.playList}) : super(key: key);
   var currentIndex;
@@ -32,9 +29,7 @@ class SongList extends StatelessWidget {
                       song: playList[index],
                       parentWIdgetname: 'PlayListSongList',
                     ),
-                    onTap: () async {
-                     _myService.playOneSong(playList[index]);
-                    });
+                );
               });
         });
   }

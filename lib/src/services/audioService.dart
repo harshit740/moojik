@@ -4,7 +4,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:moojik/src/bloc/playerBloc.dart' as player;
 
 MediaControl playControl = MediaControl(
   androidIcon: 'drawable/ic_action_play_arrow',
@@ -44,7 +43,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   Completer _completer = Completer();
   BasicPlaybackState _skipState;
   bool _playing;
-
+  String _isFetchingYoutube;
   bool get hasNext => _queueIndex + 1 < _queue.length;
 
   bool get hasPrevious => _queueIndex > 0;
@@ -126,31 +125,55 @@ class MyBackgroundTask extends BackgroundAudioTask {
   Future<void> _skip(int offset) async {
     final newPos = _queueIndex + offset;
     if (!(newPos >= 0 && newPos < _queue.length)) return;
-    // Load next item    _playing = true;
+    if (_playing == null) {
+      // First time, we want to start playing
+      _playing = true;
+    } else if (_playing) {
+      // Stop current item
+      //await _audioPlayer.stop();
+    }
+    // Load next item
     _queueIndex = newPos;
+    AudioServiceBackground.setMediaItem(mediaItem);
     _skipState = offset > 0
         ? BasicPlaybackState.skippingToNext
         : BasicPlaybackState.skippingToPrevious;
-    _skipState = null;
+    _setState(state: BasicPlaybackState.connecting);
     if (!mediaItem.id.contains("/watch?v=")) {
-      AudioServiceBackground.setMediaItem(mediaItem);
       var duration = await _audioPlayer.setUrl(mediaItem.id);
       mediaItem.duration = duration.inMilliseconds;
-      onPlay();
+      setSkipState();
     } else {
       final prefs = await SharedPreferences.getInstance();
-      List<String> data = await prefs.getStringList(mediaItem.id);
+      List<String> data = prefs.getStringList(mediaItem.id);
       if (data != null) {
         if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 12) {
-          setYotutubeLink(data);
+          mediaItem.artUri = data[1];
+          mediaItem.id = data[0];
+          var duration = await _audioPlayer.setUrl(mediaItem.id);
+          mediaItem.duration = duration.inMilliseconds;
+          AudioServiceBackground.setMediaItem(mediaItem);
+          setSkipState();
         } else {
-          AudioServiceBackground.getYoutubeLink(
+          _isFetchingYoutube =mediaItem.id;
+              AudioServiceBackground.getYoutubeLink(
               mediaItem.id.split("/watch?v=")[1]);
         }
       } else {
+        _isFetchingYoutube =mediaItem.id;
         AudioServiceBackground.getYoutubeLink(
             mediaItem.id.split("/watch?v=")[1]);
       }
+    }
+  }
+
+  void setSkipState() {
+    _skipState = null;
+    // Resume playback if we were playing
+    if (_playing) {
+      onPlay();
+    } else {
+      _setState(state: BasicPlaybackState.paused);
     }
   }
 
@@ -222,17 +245,25 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void setYotutubeLink(List details) async {
+    if(_isFetchingYoutube == mediaItem.extras['youtubeUrl']){
     mediaItem.artUri = details[1];
     mediaItem.id = details[0];
-    AudioServiceBackground.setMediaItem(mediaItem);
     var duration = await _audioPlayer.setUrl(mediaItem.id);
     mediaItem.duration = duration.inMilliseconds;
-
-    onPlay();
-    _playing = true;
+    AudioServiceBackground.setMediaItem(mediaItem);
+    setSkipState();
     final prefs = await SharedPreferences.getInstance();
     prefs.setStringList(mediaItem.extras['youtubeUrl'],
         [details[0], details[1], DateTime.now().toString()]);
+    }
+    else{
+      _queue.forEach((f){
+        if(f.extras['youtubeUrl'] == details[2]){
+          f.id = details[0];
+          f.artUri = details[1];
+        }
+      });
+    }
   }
 
   List<MediaControl> getControls(BasicPlaybackState state) {

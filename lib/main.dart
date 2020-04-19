@@ -31,13 +31,21 @@ class MyApp extends StatelessWidget {
       title: 'Moojikflux',
       onGenerateRoute: router.generateRoute,
       initialRoute: HomeViewRoute,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: Colors.green,
-      ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-      ),
+        primaryColorDark: Color(0xff000000),
+        primaryColor: Color(0xff000000),
+        backgroundColor: Color(0xff000000),
+        highlightColor: Color(0xff000000),
+        bottomAppBarColor: Color(0xff000000),
+        scaffoldBackgroundColor: Color(0xff000000),
+        primarySwatch: MaterialColor(
+            4280361249,{50: Color( 0xff000000 )
+        , 100: Color( 0xff000000 )
+        , 200: Color( 0xff000000 )
+      }),
+
+    ),
       home: AudioServiceWidget(
         child: MyHomePage(title: 'Moojikflux'),
       ),
@@ -152,6 +160,7 @@ class _MyHomePageState extends State<MyHomePage>
         initialIndex: 0,
         child: Scaffold(
           appBar: AppBar(
+            backgroundColor: Color(0xff000000),
             // Here we take the value from the MyHomePage object that was created by
             // the App.build method, and use it to set our appbar title.
             title: Text(widget.title),
@@ -177,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage>
                     if (isStarted) ...[
                       CircleAvatar(
                         backgroundImage:
-                            NetworkImage(AudioService.currentMediaItem.artUri),
+                            NetworkImage(AudioService.currentMediaItem.artUri,)
                       ),
                       Container(
                         width: MediaQuery.of(context).size.width/1.5,
@@ -237,17 +246,18 @@ class _MyHomePageState extends State<MyHomePage>
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
+            backgroundColor: Color(0xff000000),
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: Icon(Icons.home),
+                icon: Icon(Icons.home,color: Colors.white,),
                 title: Text('Home'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.search),
+                icon: Icon(Icons.search,color: Colors.white,),
                 title: Text('Search'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.library_music),
+                icon: Icon(Icons.library_music,color: Colors.white,),
                 title: Text('PlayList'),
               ),
             ],

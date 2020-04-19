@@ -56,7 +56,7 @@ class SearchView extends StatelessWidget {
                       itemBuilder: (BuildContext ctxt, int index) {
                         return SongWidget(
                           song: snapshot.data[index],
-                          parentWIdgetname: 'SearchView',
+                          parentWIdgetname: 'Searched Songs',
                         );
                       }));
             } else {

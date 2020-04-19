@@ -16,52 +16,74 @@ class PlayListDetailView extends StatelessWidget {
   AudioFun _myService = locator<BaseService>();
 
   PlayListDetailView({Key key, this.playlistItem}) : super(key: key) {}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(),
         body: Container(
             child: Column(
-          children: <Widget>[
-            Center(
-              child: Text(
-                playlistItem.title,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Center(
-                child: RaisedButton(
-              onPressed: () => playtheList(),
-              child: Text("Play"),
-              textColor: Colors.white,
-              colorBrightness: Brightness.dark,
-              elevation: 120,
-              padding: EdgeInsets.only(left: 10, right: 10),
-              textTheme: ButtonTextTheme.accent,
-            )),
-            FutureBuilder<List<Song>>(
-                future: DBProvider.db.getPlayList(playlistItem.playlistid),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData == false) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasData) {
-                    this.songs = snapshot.data;
-                    return Expanded(
-                        child: SongList(
-                      playList: snapshot.data,
-                    ));
-                  } else if (snapshot.hasError == true) {
-                    return Center(
-                      child: Icon(Icons.error_outline),
-                    );
-                  } else {
-                    return Center(
-                      child: Icon(Icons.error),
-                    );
-                  }
-                })
-          ],
-        )));
+              children: <Widget>[
+                Center(
+                  child: Text(
+                    playlistItem.title,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                      ButtonTheme(
+                        minWidth: MediaQuery.of(context).size.width/3,
+                        height: 50.0,
+                        child: RaisedButton(
+                          onPressed: () => playtheList(),
+                          child: Text("Play"),
+                          textColor: Colors.white,
+                          colorBrightness: Brightness.dark,
+                          elevation: 120,
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          textTheme: ButtonTextTheme.accent,
+                        ),
+                      ),
+                      ButtonTheme(
+                          minWidth: 200,
+                          height: 50.0,
+                          child: RaisedButton(
+                            onPressed: () => playtheList(),
+                            child: Text("ShuffelPlay"),
+                            textColor: Colors.white,
+                            colorBrightness: Brightness.dark,
+                            elevation: 120,
+                            padding: EdgeInsets.only(left: 10, right: 10),
+                            textTheme: ButtonTextTheme.accent,
+                          )
+                      )
+                    ],)),
+                FutureBuilder<List<Song>>(
+                    future: DBProvider.db.getPlayList(playlistItem.playlistid),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData == false) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasData) {
+                        this.songs = snapshot.data;
+                        return Expanded(
+                            child: SongList(
+                              playList: snapshot.data,
+                            ));
+                      } else if (snapshot.hasError == true) {
+                        return Center(
+                          child: Icon(Icons.error_outline),
+                        );
+                      } else {
+                        return Center(
+                          child: Icon(Icons.error),
+                        );
+                      }
+                    })
+              ],
+            )));
   }
 
   playtheList() async {
@@ -76,10 +98,9 @@ class PlayListDetailView extends StatelessWidget {
             title: f.title,
             displayTitle: f.title,
             displaySubtitle: f.title,
-            artUri: "",
+            artUri: "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
             extras: {"youtubeUrl": f.youtubeUrl}));
       });
-      // await AudioService.addQueue(items);
       await AudioService.skipToNext();
     }
   }
