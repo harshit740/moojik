@@ -147,7 +147,8 @@ class MyBackgroundTask extends BackgroundAudioTask {
       final prefs = await SharedPreferences.getInstance();
       List<String> data = prefs.getStringList(mediaItem.id);
       if (data != null) {
-        if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 12) {
+        print(DateTime.now().difference(DateTime.parse(data[2])));
+        if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 8) {
           mediaItem.artUri = data[1];
           mediaItem.id = data[0];
           var duration = await _audioPlayer.setUrl(mediaItem.id);
@@ -155,12 +156,12 @@ class MyBackgroundTask extends BackgroundAudioTask {
           AudioServiceBackground.setMediaItem(mediaItem);
           setSkipState();
         } else {
-          _isFetchingYoutube =mediaItem.id;
-              AudioServiceBackground.getYoutubeLink(
+          _isFetchingYoutube = mediaItem.id;
+          AudioServiceBackground.getYoutubeLink(
               mediaItem.id.split("/watch?v=")[1]);
         }
       } else {
-        _isFetchingYoutube =mediaItem.id;
+        _isFetchingYoutube = mediaItem.id;
         AudioServiceBackground.getYoutubeLink(
             mediaItem.id.split("/watch?v=")[1]);
       }
@@ -205,9 +206,10 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void onStop() {
-    _audioPlayer.seek(Duration(seconds: 0));
+       _audioPlayer.stop();
+       _audioPlayer.dispose();
     _setState(state: BasicPlaybackState.stopped);
-    // _completer.complete();
+    _completer.complete();
   }
 
   @override
@@ -245,20 +247,19 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void setYotutubeLink(List details) async {
-    if(_isFetchingYoutube == mediaItem.extras['youtubeUrl']){
-    mediaItem.artUri = details[1];
-    mediaItem.id = details[0];
-    var duration = await _audioPlayer.setUrl(mediaItem.id);
-    mediaItem.duration = duration.inMilliseconds;
-    AudioServiceBackground.setMediaItem(mediaItem);
-    setSkipState();
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setStringList(mediaItem.extras['youtubeUrl'],
-        [details[0], details[1], DateTime.now().toString()]);
-    }
-    else{
-      _queue.forEach((f){
-        if(f.extras['youtubeUrl'] == details[2]){
+    if (_isFetchingYoutube == mediaItem.extras['youtubeUrl']) {
+      mediaItem.artUri = details[1];
+      mediaItem.id = details[0];
+      var duration = await _audioPlayer.setUrl(mediaItem.id);
+      mediaItem.duration = duration.inMilliseconds;
+      AudioServiceBackground.setMediaItem(mediaItem);
+      setSkipState();
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setStringList(mediaItem.extras['youtubeUrl'],
+          [details[0], details[1], DateTime.now().toString()]);
+    } else {
+      _queue.forEach((f) {
+        if (f.extras['youtubeUrl'] == details[2]) {
           f.id = details[0];
           f.artUri = details[1];
         }

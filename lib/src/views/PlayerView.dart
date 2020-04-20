@@ -99,6 +99,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                 child: getArt(mediaItem),)
                             )),
                         Container(
+                            margin: EdgeInsets.only(bottom: 10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,
@@ -265,6 +266,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                   width: MediaQuery.of(context).size.width - 100,
                   child: Slider(
                     activeColor: Colors.white,
+                    inactiveColor: Colors.white60,
                     min: 0.0,
                     max: duration,
                     value: seekPos ?? max(0.0, min(position, duration)),

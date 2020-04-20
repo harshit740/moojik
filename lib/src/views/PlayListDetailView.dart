@@ -96,12 +96,10 @@ class PlayListDetailView extends StatelessWidget {
             id: f.youtubeUrl,
             album: playlistItem.title,
             title: f.title,
-            displayTitle: f.title,
-            displaySubtitle: f.title,
             artUri: "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
             extras: {"youtubeUrl": f.youtubeUrl}));
       });
-      await AudioService.skipToNext();
+      await AudioService.playFromMediaId(songs[0].youtubeUrl);
     }
   }
 }

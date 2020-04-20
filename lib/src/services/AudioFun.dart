@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AudioFun extends BaseService {
   static const platformMethodChannel =
-  const MethodChannel('com.moojikflux/music');
+      const MethodChannel('com.moojikflux/music');
   Song oneSong;
 
   List<Song> songQueue = [];
@@ -33,7 +33,7 @@ class AudioFun extends BaseService {
     String _message;
     try {
       final String result =
-      await platformMethodChannel.invokeMethod('getYoutubeLenk', url);
+          await platformMethodChannel.invokeMethod('getYoutubeLenk', url);
       _message = result;
     } on PlatformException catch (e) {
       _message = "Problem Retriving Lenk: ${e.message}.";
@@ -58,10 +58,11 @@ class AudioFun extends BaseService {
         id: song.youtubeUrl,
         title: song.title,
         album: album,
-        artUri: "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+        artUri:
+            "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
         displaySubtitle: song.title,
         extras: {"youtubeUrl": song.youtubeUrl}));
-    await AudioService.skipToNext();
+    await AudioService.playFromMediaId(song.youtubeUrl);
   }
 
   void setUrl(arguments) async {

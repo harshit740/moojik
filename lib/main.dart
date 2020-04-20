@@ -39,13 +39,12 @@ class MyApp extends StatelessWidget {
         highlightColor: Color(0xff000000),
         bottomAppBarColor: Color(0xff000000),
         scaffoldBackgroundColor: Color(0xff000000),
-        primarySwatch: MaterialColor(
-            4280361249,{50: Color( 0xff000000 )
-        , 100: Color( 0xff000000 )
-        , 200: Color( 0xff000000 )
-      }),
-
-    ),
+        primarySwatch: MaterialColor(4280361249, {
+          50: Color(0xff000000),
+          100: Color(0xff000000),
+          200: Color(0xff000000)
+        }),
+      ),
       home: AudioServiceWidget(
         child: MyHomePage(title: 'Moojikflux'),
       ),
@@ -185,11 +184,11 @@ class _MyHomePageState extends State<MyHomePage>
                   if (AudioService.currentMediaItem != null) ...[
                     if (isStarted) ...[
                       CircleAvatar(
-                        backgroundImage:
-                            NetworkImage(AudioService.currentMediaItem.artUri,)
-                      ),
+                          backgroundImage: NetworkImage(
+                        AudioService.currentMediaItem.artUri,
+                      )),
                       Container(
-                        width: MediaQuery.of(context).size.width/1.5,
+                        width: MediaQuery.of(context).size.width / 1.5,
                         child: SingleChildScrollView(
                             scrollDirection: Axis.vertical,
                             reverse: true,
@@ -237,6 +236,10 @@ class _MyHomePageState extends State<MyHomePage>
                               size: 45,
                               color: Colors.white,
                             ))
+                      ]else if (
+                          AudioService.playbackState.basicState ==
+                              BasicPlaybackState.connecting) ...[
+                        CircularProgressIndicator()
                       ]
                     ]
                   ]
@@ -249,15 +252,24 @@ class _MyHomePageState extends State<MyHomePage>
             backgroundColor: Color(0xff000000),
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: Icon(Icons.home,color: Colors.white,),
+                icon: Icon(
+                  Icons.home,
+                  color: Colors.white,
+                ),
                 title: Text('Home'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.search,color: Colors.white,),
+                icon: Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
                 title: Text('Search'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.library_music,color: Colors.white,),
+                icon: Icon(
+                  Icons.library_music,
+                  color: Colors.white,
+                ),
                 title: Text('PlayList'),
               ),
             ],
