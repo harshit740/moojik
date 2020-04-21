@@ -216,7 +216,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   void onAddQueueItem(MediaItem item) {
     // we're not actually maintaining a "queue", we're just keeping a map:
     if (!_mediaItems.containsKey(item.extras['youtubeUrl'])) {
-      _mediaItems[item.id] = item;
+      _mediaItems[item.extras['youtubeUrl']] = item;
       _queue.add(item);
     }
   }

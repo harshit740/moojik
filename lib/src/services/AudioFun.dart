@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
 import 'package:moojik/src/services/audioService.dart';
@@ -51,15 +52,18 @@ class AudioFun extends BaseService {
 
   @override
   playOneSong(Song song, String album) async {
+    var id;
     if (!AudioService.running) {
       await startAudioService();
     }
+    debugPrint("${song.isDownloaded} ${song.localUrl} ");
     await AudioService.addQueueItem(MediaItem(
-        id: song.youtubeUrl,
+        id: song.isDownloaded ? song.localUrl : song.youtubeUrl,
         title: song.title,
         album: album,
-        artUri:
-            "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+        artUri: song.thumbnailUrl != ""
+            ? song.thumbnailUrl
+            : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
         displaySubtitle: song.title,
         extras: {"youtubeUrl": song.youtubeUrl}));
     await AudioService.playFromMediaId(song.youtubeUrl);

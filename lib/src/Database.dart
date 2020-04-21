@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:moojik/src/bloc/PlaylistBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
@@ -46,7 +47,6 @@ class DBProvider {
       if (e.toString().contains('UNIQUE constraint failed:')) {
         var res = await db.rawQuery(
             "select songid from Songs where youtubeUrl = '${song.youtubeUrl}'");
-        print(res[0]['songid']);
         return res[0]['songid'];
       }
       return e;
@@ -56,13 +56,10 @@ class DBProvider {
   addToLikedSOngs(song, playlistID) async {
     try {
       var sondid = await addSongtoDb(song);
-      print("songid $sondid");
       if (playlistID == null) {
         var res = await addToPlayList(sondid, 1);
-        print("Liked SOngs res $res");
       } else {
         var res = await addToPlayList(sondid, playlistID);
-        print("Playlist SOngs res $res");
       }
     } catch (e) {}
   }
@@ -100,7 +97,7 @@ class DBProvider {
       List<Song> sungs = [];
       res.forEach((f) {
         sungs.add(Song(f['title'], f['desc'], f['youtubeUrl'], f['localUrl'],
-            !f['isDownloaded'].contains('false'), f['thumbnailUrl']));
+            getBool(f['isDownloaded']), f['thumbnailUrl']));
       });
       return sungs;
     } catch (e) {
@@ -114,7 +111,6 @@ class DBProvider {
     try {
       var res = await db.rawInsert(
           "INSERT Into playlists_songs (playlist_id,song_id) SELECT $playlist ,$song WHERE NOT EXISTS(SELECT * FROM playlists_songs WHERE playlist_id = $playlist AND song_id = $song); ");
-      print("res $res");
       return res;
     } catch (e) {
       print(e);
@@ -123,7 +119,22 @@ class DBProvider {
 
   deletePlayList(playlistid) async {
     final db = await database;
-     await db
+    await db
         .delete("playlists", where: "playlistid = ?", whereArgs: [playlistid]);
+  }
+
+  getBool(data) {
+    var dataa = data.toString();
+    if (dataa.contains("false")) {
+      return false;
+    } else if (dataa.contains("1")) {
+      return true;
+    } else if (dataa.contains("true")) {
+      return true;
+    } else if (dataa.contains("0")) {
+      return false;
+    } else {
+      return false;
+    }
   }
 }

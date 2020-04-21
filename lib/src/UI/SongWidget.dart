@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/UI/addSongtoPlaylist.dart';
 import 'package:moojik/src/UI/newPlaylistDialog.dart';
@@ -34,6 +35,7 @@ _navigateAndaddToPlayList(Song song, BuildContext context) async {
 
 class SongWidget extends StatelessWidget {
   AudioFun _myService = locator<BaseService>();
+  final channel = MethodChannel("com.moojikflux/music");
   final Song song;
   final parentWIdgetname;
   addtoLikedSongs(song, context) {
@@ -73,12 +75,29 @@ class SongWidget extends StatelessWidget {
     }
   }
 
+  getDownloadIcon() {
+    if (song.isDownloaded) {
+      return GestureDetector(child: Icon(Icons.remove_circle_outline));
+    } else {
+      return GestureDetector(
+        child: Icon(
+          Icons.file_download,
+          size: 40,
+        ),
+        onTap: () async {
+          await channel.invokeMethod(
+              "addToDownloadQueue", song.youtubeUrl.split("/watch?v=")[1]);
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
         padding: EdgeInsets.all(15.0),
         child: InkWell(
-            onTap: () => _myService.playOneSong(song,parentWIdgetname),
+            onTap: () => _myService.playOneSong(song, parentWIdgetname),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
@@ -88,6 +107,7 @@ class SongWidget extends StatelessWidget {
                       child: Text(
                         "${song.title}",
                       )),
+                 parentWIdgetname != "Searched Songs"?getDownloadIcon():Divider(),
                   Column(
                     children: <Widget>[getAddtoLikeIcon(song, context)],
                   )

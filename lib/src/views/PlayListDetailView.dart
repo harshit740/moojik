@@ -23,80 +23,85 @@ class PlayListDetailView extends StatelessWidget {
         appBar: AppBar(),
         body: Container(
             child: Column(
+          children: <Widget>[
+            Center(
+              child: Text(
+                playlistItem.title,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Center(
+                child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Center(
-                  child: Text(
-                    playlistItem.title,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ButtonTheme(
+                  minWidth: MediaQuery.of(context).size.width / 3,
+                  height: 50.0,
+                  child: RaisedButton(
+                    onPressed: () => playtheList(false),
+                    child: Text("Play"),
+                    textColor: Colors.white,
+                    colorBrightness: Brightness.dark,
+                    elevation: 120,
+                    padding: EdgeInsets.only(left: 10, right: 10),
+                    textTheme: ButtonTextTheme.accent,
                   ),
                 ),
-                Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                      ButtonTheme(
-                        minWidth: MediaQuery.of(context).size.width/3,
-                        height: 50.0,
-                        child: RaisedButton(
-                          onPressed: () => playtheList(),
-                          child: Text("Play"),
-                          textColor: Colors.white,
-                          colorBrightness: Brightness.dark,
-                          elevation: 120,
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          textTheme: ButtonTextTheme.accent,
-                        ),
-                      ),
-                      ButtonTheme(
-                          minWidth: 200,
-                          height: 50.0,
-                          child: RaisedButton(
-                            onPressed: () => playtheList(),
-                            child: Text("ShuffelPlay"),
-                            textColor: Colors.white,
-                            colorBrightness: Brightness.dark,
-                            elevation: 120,
-                            padding: EdgeInsets.only(left: 10, right: 10),
-                            textTheme: ButtonTextTheme.accent,
-                          )
-                      )
-                    ],)),
-                FutureBuilder<List<Song>>(
-                    future: DBProvider.db.getPlayList(playlistItem.playlistid),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData == false) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasData) {
-                        this.songs = snapshot.data;
-                        return Expanded(
-                            child: SongList(
-                              playList: snapshot.data,
-                            ));
-                      } else if (snapshot.hasError == true) {
-                        return Center(
-                          child: Icon(Icons.error_outline),
-                        );
-                      } else {
-                        return Center(
-                          child: Icon(Icons.error),
-                        );
-                      }
-                    })
+                ButtonTheme(
+                    minWidth: 200,
+                    height: 50.0,
+                    child: RaisedButton(
+                      onPressed: () => playtheList(true),
+                      child: Text("ShuffelPlay"),
+                      textColor: Colors.white,
+                      colorBrightness: Brightness.dark,
+                      elevation: 120,
+                      padding: EdgeInsets.only(left: 10, right: 10),
+                      textTheme: ButtonTextTheme.accent,
+                    ))
               ],
-            )));
+            )),
+            FutureBuilder<List<Song>>(
+                future: DBProvider.db.getPlayList(playlistItem.playlistid),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData == false) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasData) {
+                    this.songs = snapshot.data;
+                    return Expanded(
+                        child: SongList(
+                      playList: snapshot.data,
+                    ));
+                  } else if (snapshot.hasError == true) {
+                    return Center(
+                      child: Icon(Icons.error_outline),
+                    );
+                  } else {
+                    return Center(
+                      child: Icon(Icons.error),
+                    );
+                  }
+                })
+          ],
+        )));
   }
 
-  playtheList() async {
+  playtheList(bool shuffel) async {
+    if(shuffel){
+      songs.shuffle();
+    }
     if (songs.length > 0) {
       if (!AudioService.running) {
         await _myService.startAudioService();
       }
       songs.forEach((f) async {
         AudioService.addQueueItem(MediaItem(
-            id: f.youtubeUrl,
+            id: f.isDownloaded ? f.localUrl : f.youtubeUrl,
             album: playlistItem.title,
             title: f.title,
-            artUri: "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+            artUri: f.thumbnailUrl != ""
+                ? f.thumbnailUrl
+                : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
             extras: {"youtubeUrl": f.youtubeUrl}));
       });
       await AudioService.playFromMediaId(songs[0].youtubeUrl);
