@@ -1,4 +1,3 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:moojik/src/UI/songList.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
@@ -15,7 +14,7 @@ class PlayListDetailView extends StatelessWidget {
   List<Song> songs;
   AudioFun _myService = locator<BaseService>();
 
-  PlayListDetailView({Key key, this.playlistItem}) : super(key: key) {}
+  PlayListDetailView({Key key, this.playlistItem}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +37,8 @@ class PlayListDetailView extends StatelessWidget {
                   minWidth: MediaQuery.of(context).size.width / 3,
                   height: 50.0,
                   child: RaisedButton(
-                    onPressed: () => playtheList(false),
+                    onPressed: () => _myService.playtheList(
+                        songs, playlistItem.title, false),
                     child: Text("Play"),
                     textColor: Colors.white,
                     colorBrightness: Brightness.dark,
@@ -51,7 +51,8 @@ class PlayListDetailView extends StatelessWidget {
                     minWidth: 200,
                     height: 50.0,
                     child: RaisedButton(
-                      onPressed: () => playtheList(true),
+                      onPressed: () => _myService.playtheList(
+                          songs, playlistItem.title, true),
                       child: Text("ShuffelPlay"),
                       textColor: Colors.white,
                       colorBrightness: Brightness.dark,
@@ -84,27 +85,5 @@ class PlayListDetailView extends StatelessWidget {
                 })
           ],
         )));
-  }
-
-  playtheList(bool shuffel) async {
-    if(shuffel){
-      songs.shuffle();
-    }
-    if (songs.length > 0) {
-      if (!AudioService.running) {
-        await _myService.startAudioService();
-      }
-      songs.forEach((f) async {
-        AudioService.addQueueItem(MediaItem(
-            id: f.isDownloaded ? f.localUrl : f.youtubeUrl,
-            album: playlistItem.title,
-            title: f.title,
-            artUri: f.thumbnailUrl != ""
-                ? f.thumbnailUrl
-                : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
-            extras: {"youtubeUrl": f.youtubeUrl}));
-      });
-      await AudioService.playFromMediaId(songs[0].youtubeUrl);
-    }
   }
 }

@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:moojik/src/bloc/PlaylistBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
@@ -57,9 +55,9 @@ class DBProvider {
     try {
       var sondid = await addSongtoDb(song);
       if (playlistID == null) {
-        var res = await addToPlayList(sondid, 1);
+        await addToPlayList(sondid, 1);
       } else {
-        var res = await addToPlayList(sondid, playlistID);
+         await addToPlayList(sondid, playlistID);
       }
     } catch (e) {}
   }

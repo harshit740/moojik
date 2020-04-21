@@ -142,6 +142,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
     if (!mediaItem.id.contains("/watch?v=")) {
       var duration = await _audioPlayer.setUrl(mediaItem.id);
       mediaItem.duration = duration.inMilliseconds;
+      AudioServiceBackground.setMediaItem(mediaItem);
       setSkipState();
     } else {
       final prefs = await SharedPreferences.getInstance();

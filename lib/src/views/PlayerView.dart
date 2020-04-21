@@ -28,7 +28,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
 
   void setRepeat(int repeatmode) async {
     final prefs = await SharedPreferences.getInstance();
-    var data = await prefs.setInt("isRepeatMode", repeatmode);
+    await prefs.setInt("isRepeatMode", repeatmode);
     setState(() {
       isRepeatMode = repeatmode;
     });

@@ -52,7 +52,6 @@ class AudioFun extends BaseService {
 
   @override
   playOneSong(Song song, String album) async {
-    var id;
     if (!AudioService.running) {
       await startAudioService();
     }
@@ -87,5 +86,28 @@ class AudioFun extends BaseService {
         displaySubtitle: oneSong.title,
         extras: {"youtubeUrl": oneSong.youtubeUrl}));
     await AudioService.skipToNext();
+  }
+
+  @override
+  Future<void> playtheList(List<Song> songs, String playlist, shuffel) async {
+    if (shuffel) {
+      songs.shuffle();
+    }
+    if (songs.length > 0) {
+      if (!AudioService.running) {
+        await startAudioService();
+      }
+      songs.forEach((f) async {
+        AudioService.addQueueItem(MediaItem(
+            id: f.isDownloaded ? f.localUrl : f.youtubeUrl,
+            album: playlist,
+            title: f.title,
+            artUri: f.thumbnailUrl != ""
+                ? f.thumbnailUrl
+                : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+            extras: {"youtubeUrl": f.youtubeUrl}));
+      });
+      await AudioService.playFromMediaId(songs[0].youtubeUrl);
+    }
   }
 }
