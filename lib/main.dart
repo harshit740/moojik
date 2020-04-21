@@ -33,16 +33,16 @@ class MyApp extends StatelessWidget {
       initialRoute: HomeViewRoute,
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primaryColorDark: Color(0xff000000),
-        primaryColor: Color(0xff000000),
-        backgroundColor: Color(0xff000000),
-        highlightColor: Color(0xff000000),
-        bottomAppBarColor: Color(0xff000000),
-        scaffoldBackgroundColor: Color(0xff000000),
+        primaryColorDark: Color(0xFF1B262C),
+        primaryColor: Color(0xFF1B262C),
+        backgroundColor: Color(0xFF1B262C),
+        highlightColor: Color(0xFF1B262C),
+        bottomAppBarColor: Color(0xFF1B262C),
+        scaffoldBackgroundColor: Color(0xFF1B262C),
         primarySwatch: MaterialColor(4280361249, {
-          50: Color(0xff000000),
-          100: Color(0xff000000),
-          200: Color(0xff000000)
+          50: Color(0xFF1B262C),
+          100: Color(0xFF1B262C),
+          200: Color(0xFF1B262C)
         }),
       ),
       home: AudioServiceWidget(
