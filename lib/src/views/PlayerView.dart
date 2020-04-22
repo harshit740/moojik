@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +27,8 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   int isRepeatMode;
   var som;
   bool isGetigFromYoutube = false;
+  Rect region;
+  Color colors;
 
   void setRepeat(int repeatmode) async {
     final prefs = await SharedPreferences.getInstance();
@@ -40,23 +44,42 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
       isRepeatMode = prefs.getInt("isRepeatMode");
       isGetigFromYoutube = false;
     });
+        AudioService.currentMediaItemStream.listen((mediaItem) {
+      if (mediaItem.extras != null && mediaItem.extras.containsKey('colors')) {
+        print(
+            "Called Mdedaiaddsadasdasdasasd ${mediaItem.extras['colors'].toString().split("Color(")[1].split(')')[0]}");
+        colors = Color(int.parse(mediaItem.extras['colors']
+            .toString()
+            .split("Color(")[1]
+            .split(')')[0]));
+        setState(() {
+          colors = colors;
+        });
+      }
+    });
+
   }
 
   @override
   void initState() {
     setInitStates();
-
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: colors != null ? colors : Color(0xFF1B262C),
         appBar: AppBar(
           centerTitle: true,
           title: Text("Playing from some Library"),
           elevation: 10,
-          backgroundColor: Colors.black12,
+          backgroundColor: colors != null ? colors : Color(0xFF1B262C),
           actions: <Widget>[
             FlatButton(
               child: Icon(Icons.file_download),
@@ -78,7 +101,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                 builder: (context, snapshot) {
                   final screenState = snapshot.data;
                   final queue = screenState?.queue;
-                  final mediaItem = screenState?.mediaItem;
+                  MediaItem mediaItem = screenState?.mediaItem;
                   final state = screenState?.playbackState;
                   final basicState =
                       state?.basicState ?? BasicPlaybackState.none;
@@ -90,14 +113,14 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                             padding: EdgeInsets.all(20),
                             margin: EdgeInsets.only(top: 10, bottom: 15),
                             child: Center(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(59.0)),
+                                child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(59.0)),
                                   color: Colors.redAccent,
-                                  backgroundBlendMode: BlendMode.colorDodge
-                                ),
-                                child: getArt(mediaItem),)
-                            )),
+                                  backgroundBlendMode: BlendMode.colorDodge),
+                              child: getArt(mediaItem),
+                            ))),
                         Container(
                             margin: EdgeInsets.only(bottom: 10),
                             child: Column(
@@ -310,7 +333,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
 
   GestureDetector playButton() => GestureDetector(
         child: Icon(
-          Icons.play_circle_filled,
+          Icons.play_circle_outline,
           size: 76,
         ),
         onTap: AudioService.play,
@@ -318,7 +341,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
 
   GestureDetector pauseButton() => GestureDetector(
         child: Icon(
-          Icons.pause_circle_filled,
+          Icons.pause_circle_outline,
           size: 76,
         ),
         onTap: AudioService.pause,
@@ -333,14 +356,14 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
       );
 
   getArt(MediaItem mediaItem) {
-    if (mediaItem != null && mediaItem.artUri != null)
+    if (mediaItem != null && mediaItem.artUri != null) {
       return Image.network(
         mediaItem.artUri,
         height: MediaQuery.of(context).size.height / 2.5,
         fit: BoxFit.fill,
         colorBlendMode: BlendMode.darken,
       );
-    else {
+    } else {
       return Image.network(
         'https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930',
         fit: BoxFit.fitWidth,

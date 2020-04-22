@@ -26,6 +26,7 @@ class AudioFun extends BaseService {
       notificationColor: 0xFF2196f3,
       androidNotificationIcon: 'mipmap/ic_launcher',
       enableQueue: true,
+      resumeOnClick: true, 
     );
   }
 
@@ -97,7 +98,7 @@ class AudioFun extends BaseService {
       if (!AudioService.running) {
         await startAudioService();
       }
-     await AudioService.customAction("clearQueue", "_queue");
+      await AudioService.customAction("clearQueue", "_queue");
       songs.forEach((f) async {
         AudioService.addQueueItem(MediaItem(
             id: f.isDownloaded ? f.localUrl : f.youtubeUrl,
@@ -109,6 +110,7 @@ class AudioFun extends BaseService {
             extras: {"youtubeUrl": f.youtubeUrl}));
       });
       await AudioService.playFromMediaId(songs[0].youtubeUrl);
+
     }
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 MediaControl playControl = MediaControl(
@@ -50,7 +51,9 @@ class MyBackgroundTask extends BackgroundAudioTask {
   bool firsttime;
   MediaItem get mediaItem => _queue[_queueIndex];
   int offset;
-
+  PaletteGenerator paletteGenerator;
+  Color colors;
+  final GlobalKey imageKey = GlobalKey();
   BasicPlaybackState _stateToBasicState(AudioPlaybackState state) {
     switch (state) {
       case AudioPlaybackState.none:
@@ -164,6 +167,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       mediaItem.duration = duration.inMilliseconds;
       AudioServiceBackground.setMediaItem(mediaItem);
       setSkipState();
+      _updatePaletteGenerator();
     } else {
       final prefs = await SharedPreferences.getInstance();
       List<String> data = prefs.getStringList(mediaItem.id);
@@ -176,6 +180,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
           mediaItem.duration = duration.inMilliseconds;
           AudioServiceBackground.setMediaItem(mediaItem);
           setSkipState();
+          _updatePaletteGenerator();
         } else {
           _isFetchingYoutube = mediaItem.id;
           AudioServiceBackground.getYoutubeLink(
@@ -298,6 +303,30 @@ class MyBackgroundTask extends BackgroundAudioTask {
           f.artUri = details[1];
         }
       });
+    }
+    _updatePaletteGenerator();
+  }
+
+  Future<void> _updatePaletteGenerator() async {
+    if (mediaItem.artUri != null &&
+        mediaItem.artUri != "" &&
+        !mediaItem.extras.containsKey('colors')) {
+      ImageProvider image = NetworkImage(mediaItem.artUri);
+      print("Called Palter Genrator");
+      paletteGenerator = await PaletteGenerator.fromImageProvider(image,
+          maximumColorCount: 10, timeout: Duration(seconds: 50));
+      if (paletteGenerator.darkVibrantColor != null) {
+        colors = paletteGenerator.darkVibrantColor.color;
+      } else if (paletteGenerator.darkMutedColor != null) {
+        colors = paletteGenerator.darkMutedColor.color;
+      } else if (paletteGenerator.dominantColor != null) {
+        colors = paletteGenerator.dominantColor.color;
+      } else if (paletteGenerator.colors != null) {
+        colors = paletteGenerator.colors.first;
+      }
+      print(colors);
+      mediaItem.extras['colors'] = colors.toString();
+      AudioServiceBackground.setMediaItem(mediaItem);
     }
   }
 
