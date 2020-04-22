@@ -60,7 +60,9 @@ class SearchView extends StatelessWidget {
                         );
                       }));
             } else {
-              return Divider();
+              return Container(child:Center(
+                child:Icon(Icons.contacts)
+                ));
             }
           }),
     ]);

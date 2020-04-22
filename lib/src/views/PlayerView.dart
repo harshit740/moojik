@@ -7,7 +7,6 @@ import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,7 +28,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   bool isGetigFromYoutube = false;
   Rect region;
   Color colors;
-
+  String playingfrom;
   void setRepeat(int repeatmode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt("isRepeatMode", repeatmode);
@@ -44,20 +43,25 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
       isRepeatMode = prefs.getInt("isRepeatMode");
       isGetigFromYoutube = false;
     });
-        AudioService.currentMediaItemStream.listen((mediaItem) {
-      if (mediaItem.extras != null && mediaItem.extras.containsKey('colors')) {
-        print(
-            "Called Mdedaiaddsadasdasdasasd ${mediaItem.extras['colors'].toString().split("Color(")[1].split(')')[0]}");
-        colors = Color(int.parse(mediaItem.extras['colors']
-            .toString()
-            .split("Color(")[1]
-            .split(')')[0]));
+    AudioService.currentMediaItemStream.listen((mediaItem) {
+      if (mediaItem != null) {
         setState(() {
-          colors = colors;
+          playingfrom = mediaItem.album;
         });
+        if (mediaItem.extras != null &&
+            mediaItem.extras.containsKey('colors')) {
+          print(
+              "Called Mdedaiaddsadasdasdasasd ${mediaItem.extras['colors'].toString().split("Color(")[1].split(')')[0]}");
+          colors = Color(int.parse(mediaItem.extras['colors']
+              .toString()
+              .split("Color(")[1]
+              .split(')')[0]));
+          setState(() {
+            colors = colors;
+          });
+        }
       }
     });
-
   }
 
   @override
@@ -77,182 +81,223 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
         backgroundColor: colors != null ? colors : Color(0xFF1B262C),
         appBar: AppBar(
           centerTitle: true,
-          title: Text("Playing from some Library"),
-          elevation: 10,
+          title: Text("Playing from $playingfrom"),
+          elevation: 0,
           backgroundColor: colors != null ? colors : Color(0xFF1B262C),
-          actions: <Widget>[
-            FlatButton(
-              child: Icon(Icons.file_download),
-              onPressed: () {},
-            )
-          ],
+          actions: <Widget>[],
         ),
-        body: Container(
-            height: MediaQuery.of(context).size.height,
-            padding: EdgeInsets.all(10),
-            child: StreamBuilder(
-                stream: Rx.combineLatest3<List<MediaItem>, MediaItem,
-                        PlaybackState, ScreenState>(
-                    AudioService.queueStream,
-                    AudioService.currentMediaItemStream,
-                    AudioService.playbackStateStream,
-                    (queue, mediaItem, playbackState) =>
-                        ScreenState(queue, mediaItem, playbackState)),
-                builder: (context, snapshot) {
-                  final screenState = snapshot.data;
-                  final queue = screenState?.queue;
-                  MediaItem mediaItem = screenState?.mediaItem;
-                  final state = screenState?.playbackState;
-                  final basicState =
-                      state?.basicState ?? BasicPlaybackState.none;
-                  if (snapshot.hasData) {
-                    return Container(
-                        child: Column(
-                      children: <Widget>[
-                        Container(
-                            padding: EdgeInsets.all(20),
-                            margin: EdgeInsets.only(top: 10, bottom: 15),
-                            child: Center(
-                                child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(59.0)),
-                                  color: Colors.redAccent,
-                                  backgroundBlendMode: BlendMode.colorDodge),
-                              child: getArt(mediaItem),
-                            ))),
-                        Container(
-                            margin: EdgeInsets.only(bottom: 10),
+        body: Center(
+            child: Container(
+                color: colors,
+                height: MediaQuery.of(context).size.height,
+                padding: EdgeInsets.all(10),
+                child: StreamBuilder(
+                    stream: Rx.combineLatest3<List<MediaItem>, MediaItem,
+                            PlaybackState, ScreenState>(
+                        AudioService.queueStream,
+                        AudioService.currentMediaItemStream,
+                        AudioService.playbackStateStream,
+                        (queue, mediaItem, playbackState) =>
+                            ScreenState(queue, mediaItem, playbackState)),
+                    builder: (context, snapshot) {
+                      final screenState = snapshot.data;
+                      final queue = screenState?.queue;
+                      MediaItem mediaItem = screenState?.mediaItem;
+                      final state = screenState?.playbackState;
+                      final basicState =
+                          state?.basicState ?? BasicPlaybackState.none;
+                      if (snapshot.hasData) {
+                        return Container(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                if (mediaItem != null &&
-                                    mediaItem.title != null) ...[
-                                  Center(
-                                    child: Text(
-                                      "${mediaItem.title.toString().split("- Duration")[0]}",
-                                      textAlign: TextAlign.center,
-                                      softWrap: true,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 23),
-                                    ),
-                                  )
-                                ] else if (mediaItem == null) ...[
-                                  Text(
-                                    "Welcome Nigga",
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 25),
-                                  ),
-                                ],
-                              ],
-                            )),
-                        if (basicState != BasicPlaybackState.none &&
-                            basicState != BasicPlaybackState.stopped) ...[
-                          Container(
-                            width: MediaQuery.of(context).size.width,
-                            child: positionIndicator(mediaItem, state),
-                          )
-                        ],
-                        Flex(
-                          mainAxisSize: MainAxisSize.min,
-                          direction: Axis.horizontal,
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
-                            InkWell(
-                              child: Icon(
-                                Icons.shuffle,
-                                size: 25,
-                              ),
-                              onTap: () {},
-                            ),
-                            FlatButton(
-                              child: Icon(
-                                Icons.skip_previous,
-                                size: 50,
-                              ),
-                              onPressed: () {
-                                AudioService.skipToPrevious();
-                              },
-                            ),
-                            if (basicState == BasicPlaybackState.none) ...[
-                              startButton(),
-                            ] else if (basicState ==
-                                    BasicPlaybackState.playing ||
-                                basicState == BasicPlaybackState.buffering) ...[
-                              pauseButton(),
-                            ] else if (basicState ==
-                                BasicPlaybackState.paused) ...[
-                              playButton(),
-                            ] else if (basicState ==
-                                BasicPlaybackState.connecting) ...[
-                              CircularProgressIndicator()
-                            ] else if (basicState ==
-                                    BasicPlaybackState.skippingToNext ||
-                                basicState ==
-                                    BasicPlaybackState.skippingToPrevious) ...[
-                              CircularProgressIndicator()
+                            Container(
+                                padding: EdgeInsets.all(20),
+                                child: Center(
+                                    child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(60.0)),
+                                  ),
+                                  child: getArt(mediaItem),
+                                ))),
+                            Container(
+                                margin: EdgeInsets.only(bottom: 5),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.only(bottom: 15),
+                                      child: Text(
+                                        "I'm not looking for an answer I just hope these words will help Whoever's listening If someone cares to listen in I've been up and down in life Sure, every day's a chance to fight Forever wrestling, trying to make amends again",
+                                        textAlign: TextAlign.center,
+                                        textScaleFactor: 1.1,
+                                        maxLines: 3,
+                                        softWrap: true,
+                                        textWidthBasis: TextWidthBasis.parent,
+                                        style: TextStyle(
+                                            fontStyle: FontStyle.normal),
+                                        textDirection: TextDirection.ltr,
+                                      ),
+                                    ),
+                                    if (mediaItem != null &&
+                                        mediaItem.title != null) ...[
+                                      Center(
+                                        child: Text(
+                                          "${mediaItem.title.toString().split("- Duration")[0]}",
+                                          textAlign: TextAlign.center,
+                                          softWrap: true,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 24),
+                                        ),
+                                      )
+                                    ] else if (mediaItem == null) ...[
+                                      Text(
+                                        "Welcome Nigga",
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 25),
+                                      ),
+                                    ],
+                                  ],
+                                )),
+                            if (basicState != BasicPlaybackState.none &&
+                                basicState != BasicPlaybackState.stopped) ...[
+                              Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: positionIndicator(mediaItem, state),
+                              )
                             ],
-                            FlatButton(
-                              child: Icon(
-                                Icons.skip_next,
-                                size: 50,
+                            Container(
+                              margin: EdgeInsets.only(bottom: 8),
+                              child: Flex(
+                                direction: Axis.horizontal,
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  IconButton(
+                                      icon: Icon(
+                                        Icons.blur_circular,
+                                        size: 35,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: null),
+                                  IconButton(
+                                      icon: Icon(Icons.featured_play_list,
+                                          color: Colors.white, size: 35),
+                                      onPressed: null),
+                                  IconButton(
+                                      icon: Icon(
+                                        Icons.file_download,
+                                        size: 35,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: null),
+                                ],
                               ),
-                              onPressed: () {
-                                try {
-                                  if (!AudioService.running) {
-                                    _myService.startAudioService();
-                                  }
-                                  AudioService.skipToNext();
-                                } catch (e) {
-                                  print(e);
-                                }
-                              },
                             ),
-                            if (isRepeatMode == 1) ...[
-                              InkWell(
-                                child: Icon(
-                                  Icons.repeat,
-                                  size: 25,
+                            Flex(
+                              mainAxisSize: MainAxisSize.min,
+                              direction: Axis.horizontal,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                InkWell(
+                                  child: Icon(
+                                    Icons.shuffle,
+                                    size: 25,
+                                  ),
+                                  onTap: () {},
                                 ),
-                                onTap: () {
-                                  setRepeat(2);
-                                },
-                              )
-                            ] else if (isRepeatMode == 2) ...[
-                              InkWell(
-                                child: Icon(
-                                  Icons.repeat_one,
-                                  size: 25,
+                                FlatButton(
+                                  child: Icon(
+                                    Icons.skip_previous,
+                                    size: 50,
+                                  ),
+                                  onPressed: () {
+                                    AudioService.skipToPrevious();
+                                  },
                                 ),
-                                onTap: () {
-                                  setRepeat(0);
-                                },
-                              )
-                            ] else ...[
-                              InkWell(
-                                child: Icon(
-                                  Icons.do_not_disturb_alt,
-                                  size: 25,
+                                if (basicState == BasicPlaybackState.none) ...[
+                                  startButton(),
+                                ] else if (basicState ==
+                                        BasicPlaybackState.playing ||
+                                    basicState ==
+                                        BasicPlaybackState.buffering) ...[
+                                  pauseButton(),
+                                ] else if (basicState ==
+                                    BasicPlaybackState.paused) ...[
+                                  playButton(),
+                                ] else if (basicState ==
+                                    BasicPlaybackState.connecting) ...[
+                                  CircularProgressIndicator()
+                                ] else if (basicState ==
+                                        BasicPlaybackState.skippingToNext ||
+                                    basicState ==
+                                        BasicPlaybackState
+                                            .skippingToPrevious) ...[
+                                  CircularProgressIndicator()
+                                ],
+                                FlatButton(
+                                  child: Icon(
+                                    Icons.skip_next,
+                                    size: 50,
+                                  ),
+                                  onPressed: () {
+                                    try {
+                                      if (!AudioService.running) {
+                                        _myService.startAudioService();
+                                      }
+                                      AudioService.skipToNext();
+                                    } catch (e) {
+                                      print(e);
+                                    }
+                                  },
                                 ),
-                                onTap: () {
-                                  setRepeat(1);
-                                },
-                              )
-                            ]
+                                if (isRepeatMode == 1) ...[
+                                  InkWell(
+                                    child: Icon(
+                                      Icons.repeat,
+                                      size: 25,
+                                    ),
+                                    onTap: () {
+                                      setRepeat(2);
+                                    },
+                                  )
+                                ] else if (isRepeatMode == 2) ...[
+                                  InkWell(
+                                    child: Icon(
+                                      Icons.repeat_one,
+                                      size: 25,
+                                    ),
+                                    onTap: () {
+                                      setRepeat(0);
+                                    },
+                                  )
+                                ] else ...[
+                                  InkWell(
+                                    child: Icon(
+                                      Icons.do_not_disturb_alt,
+                                      size: 25,
+                                    ),
+                                    onTap: () {
+                                      setRepeat(1);
+                                    },
+                                  )
+                                ]
+                              ],
+                            )
                           ],
-                        )
-                      ],
-                    ));
-                  } else {
-                    return Center(child: Text('No media is currently Playing'));
-                  }
-                })));
+                        ));
+                      } else {
+                        return Center(
+                            child: Text('No media is currently Playing'));
+                      }
+                    }))));
   }
 
   Widget positionIndicator(MediaItem mediaItem, PlaybackState state) {
@@ -307,7 +352,14 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                 Text("$twoDigitMinutes:$twoDigitSeconds")
               ]);
         } else {
-          return Divider();
+          return Slider(
+            activeColor: Colors.white,
+            inactiveColor: Colors.white60,
+            min: 0.0,
+            max: 0,
+            onChanged: (double value) {},
+            value: 0,
+          );
         }
       },
     );
@@ -320,8 +372,8 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
 
   GestureDetector startButton() => GestureDetector(
         child: Icon(
-          Icons.play_circle_filled,
-          size: 76,
+          Icons.play_circle_outline,
+          size: 50,
         ),
         onTap: () async {
           if (!AudioService.running) {
@@ -334,7 +386,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   GestureDetector playButton() => GestureDetector(
         child: Icon(
           Icons.play_circle_outline,
-          size: 76,
+          size: 60,
         ),
         onTap: AudioService.play,
       );
@@ -342,7 +394,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   GestureDetector pauseButton() => GestureDetector(
         child: Icon(
           Icons.pause_circle_outline,
-          size: 76,
+          size: 60,
         ),
         onTap: AudioService.pause,
       );
@@ -350,18 +402,21 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   GestureDetector stopButton() => GestureDetector(
         child: Icon(
           Icons.stop,
-          size: 76,
+          size: 60,
         ),
         onTap: AudioService.stop,
       );
 
   getArt(MediaItem mediaItem) {
     if (mediaItem != null && mediaItem.artUri != null) {
-      return Image.network(
-        mediaItem.artUri,
-        height: MediaQuery.of(context).size.height / 2.5,
-        fit: BoxFit.fill,
-        colorBlendMode: BlendMode.darken,
+      return CircleAvatar(
+        backgroundImage: NetworkImage(
+          mediaItem.artUri,
+        ),
+        backgroundColor: colors,
+        foregroundColor: colors,
+        maxRadius: 115,
+        minRadius: 100,
       );
     } else {
       return Image.network(
