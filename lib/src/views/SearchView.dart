@@ -61,7 +61,7 @@ class SearchView extends StatelessWidget {
                       }));
             } else {
               return Container(child:Center(
-                child:Icon(Icons.contacts)
+                child:Image(image: AssetImage('assets/SearchBarrAnimation.gif'),)
                 ));
             }
           }),
