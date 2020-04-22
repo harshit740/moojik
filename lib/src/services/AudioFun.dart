@@ -97,6 +97,7 @@ class AudioFun extends BaseService {
       if (!AudioService.running) {
         await startAudioService();
       }
+     await AudioService.customAction("clearQueue", "_queue");
       songs.forEach((f) async {
         AudioService.addQueueItem(MediaItem(
             id: f.isDownloaded ? f.localUrl : f.youtubeUrl,

@@ -47,7 +47,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   bool get hasNext => _queueIndex + 1 < _queue.length;
 
   bool get hasPrevious => _queueIndex > 0;
-
+  bool firsttime;
   MediaItem get mediaItem => _queue[_queueIndex];
   int offset;
 
@@ -72,6 +72,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   Future<void> onStart() async {
+    firsttime = true;
     var playerStateSubscription = _audioPlayer.playbackStateStream
         .where((state) => state == AudioPlaybackState.completed)
         .listen((state) {
@@ -105,7 +106,8 @@ class MyBackgroundTask extends BackgroundAudioTask {
       _queueIndex = -1;
       onSkipToNext();
     } else {
-      _audioPlayer.pause();
+      onSeekTo(0);
+      onPause();
     }
   }
 
@@ -124,7 +126,25 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   Future<void> _skip(int offset) async {
     final newPos = _queueIndex + offset;
-    if (!(newPos >= 0 && newPos < _queue.length)) return;
+    if (!(newPos >= 0 && newPos < _queue.length)) {
+      if (firsttime) {
+        firsttime = false;
+        return;
+      } else if (_queue.isNotEmpty) {
+        if (offset == -1) {
+          _queueIndex = _queue.length;
+          return onSkipToPrevious();
+        } else if (offset == 1) {
+          _queueIndex = -1;
+          return onSkipToNext();
+        }
+      }
+      return;
+    }
+    if (_queueIndex == 0 && _queue.length - 1 == 0) {
+      print("QUeue Index $_queueIndex and queue lenght $_queue");
+      return;
+    }
     if (_playing == null) {
       // First time, we want to start playing
       _playing = true;
@@ -169,6 +189,19 @@ class MyBackgroundTask extends BackgroundAudioTask {
     }
   }
 
+  @override
+  void onCustomAction(String name, arguments) {
+    switch (name) {
+      case "clearQueue":
+        _queue.clear();
+        _mediaItems.clear();
+        _queueIndex = -1;
+        AudioServiceBackground.setQueue(_queue);
+        break;
+    }
+    super.onCustomAction(name, arguments);
+  }
+
   void setSkipState() {
     _skipState = null;
     // Resume playback if we were playing
@@ -207,9 +240,9 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void onStop() {
-       _audioPlayer.stop();
-       _audioPlayer.dispose();
     _setState(state: BasicPlaybackState.stopped);
+    _audioPlayer.stop();
+    _audioPlayer.dispose();
     _completer.complete();
   }
 
