@@ -145,7 +145,6 @@ class MyBackgroundTask extends BackgroundAudioTask {
       return;
     }
     if (_queueIndex == 0 && _queue.length - 1 == 0) {
-      print("QUeue Index $_queueIndex and queue lenght $_queue");
       return;
     }
     if (_playing == null) {
@@ -167,7 +166,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       mediaItem.duration = duration.inMilliseconds;
       AudioServiceBackground.setMediaItem(mediaItem);
       setSkipState();
-      _updatePaletteGenerator();
+      return await _updatePaletteGenerator();
     } else {
       final prefs = await SharedPreferences.getInstance();
       List<String> data = prefs.getStringList(mediaItem.id);
@@ -180,7 +179,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
           mediaItem.duration = duration.inMilliseconds;
           AudioServiceBackground.setMediaItem(mediaItem);
           setSkipState();
-          _updatePaletteGenerator();
+          return await _updatePaletteGenerator();
         } else {
           _isFetchingYoutube = mediaItem.id;
           AudioServiceBackground.getYoutubeLink(
@@ -304,7 +303,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
         }
       });
     }
-    _updatePaletteGenerator();
+    return await _updatePaletteGenerator();
   }
 
   Future<void> _updatePaletteGenerator() async {
@@ -313,7 +312,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
         !mediaItem.extras.containsKey('colors')) {
       ImageProvider image = NetworkImage(mediaItem.artUri);
       paletteGenerator = await PaletteGenerator.fromImageProvider(image,
-          maximumColorCount: 10, timeout: Duration(seconds: 50));
+          maximumColorCount: 6, timeout: Duration(seconds: 50));
       if (paletteGenerator.darkMutedColor != null) {
         colors = paletteGenerator.darkMutedColor.color;
       } else if (paletteGenerator.darkVibrantColor != null) {

@@ -27,6 +27,8 @@ dependencies:
   audio_service: ^0.7.2
   get_it: ^3.1.0
   palette_generator: ^0.2.2
+  eva_icons_flutter: ^2.0.0
+  flutter_svg: ^0.17.4
   shared_preferences:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -43,9 +45,13 @@ dev_dependencies:
 flutter:
   assets:
      - assets/SearchBarrAnimation.gif
+     - assets/play-button.svg
+     - assets/pause(1).svg
+     - assets/down-group2.svg
+     - assets/Group1(1).svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
-  # the material Icons class.
+  # the material Icons class. pause.svg   play-button.svg
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

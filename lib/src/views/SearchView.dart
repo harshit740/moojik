@@ -60,9 +60,11 @@ class SearchView extends StatelessWidget {
                         );
                       }));
             } else {
-              return Container(child:Center(
-                child:Image(image: AssetImage('assets/SearchBarrAnimation.gif'),)
-                ));
+              return Container(
+                  child: Center(
+                      child: Image(
+                image: AssetImage('assets/SearchBarrAnimation.gif'),
+              )));
             }
           }),
     ]);
