@@ -31,7 +31,10 @@ class SearchView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: <Widget>[
+    return Container(
+      child:Column(
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
       TextField(
         onChanged: searchBlox.changesearchTerm,
         onSubmitted: searchBlox.search,
@@ -67,6 +70,6 @@ class SearchView extends StatelessWidget {
               )));
             }
           }),
-    ]);
+    ]));
   }
 }
