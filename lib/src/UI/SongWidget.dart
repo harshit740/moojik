@@ -65,9 +65,13 @@ class SongWidget extends StatelessWidget {
 
   getAddtoLikeIcon(song, context) {
     if (this.parentWIdgetname == 'Searched Songs') {
-      return GestureDetector(
+      if (!song.title.contains('- Channel')) {
+        return GestureDetector(
           onTap: () => addToPlayList(song, context),
           child: Icon(Icons.library_add));
+      } else {
+        return Icon(Icons.do_not_disturb);
+      }
     } else if (this.parentWIdgetname == 'PlayListSongList') {
       return GestureDetector(
           //  onTap: () => addtoLikedSongs(song, context),

@@ -9,6 +9,7 @@ import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
+import 'package:moojik/src/utils/songLyrics.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
@@ -24,7 +25,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   AudioFun _myService = locator<BaseService>();
   final BehaviorSubject<double> _dragPositionSubject =
       BehaviorSubject.seeded(null);
-
+  var lyrics = "Geeting your lyrics";
   Song currentSong;
   int isRepeatMode;
   var som;
@@ -221,30 +222,14 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                                   scrollDirection:
                                                       Axis.vertical,
                                                   child: Text(
-                                                    """I will be your dragon indoors,
-Take you outside these four walls
-You could be my heaven and sky
-I pull off the corner of my eye
-You're not as I, and you told me to fly
-I don't know how we are close to the sky
-Wondering why I'm blind in the dark
-Like you said
-I'll be your dragon tonight
-You'll never see me on the street
-Tears are records on repeat
-You'll never see me on the street
-Tears are records on repeat
-I'll be your dragon tonight
-You'll never see me on the street
-Tears are records on repeat
-You'll never see me on the street
-You'll never see me on the street
-Tears are records on repeat""",
+                                                    mediaItem.extras['lyrics'],
                                                     textAlign: TextAlign.center,
+
                                                     textDirection:
                                                         TextDirection.ltr,
                                                     textScaleFactor: 1.1,
                                                     style: TextStyle(
+                                                      color: Colors.white,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),

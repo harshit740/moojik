@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:moojik/src/utils/songLyrics.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,15 +46,18 @@ class MyBackgroundTask extends BackgroundAudioTask {
   BasicPlaybackState _skipState;
   bool _playing;
   String _isFetchingYoutube;
+
   bool get hasNext => _queueIndex + 1 < _queue.length;
 
   bool get hasPrevious => _queueIndex > 0;
   bool firsttime;
+
   MediaItem get mediaItem => _queue[_queueIndex];
   int offset;
   PaletteGenerator paletteGenerator;
   Color colors;
   final GlobalKey imageKey = GlobalKey();
+
   BasicPlaybackState _stateToBasicState(AudioPlaybackState state) {
     switch (state) {
       case AudioPlaybackState.none:
@@ -156,11 +160,13 @@ class MyBackgroundTask extends BackgroundAudioTask {
     }
     // Load next item
     _queueIndex = newPos;
+    mediaItem.extras['lyrics'] = "Getting YOur Lyrics calm down";
     AudioServiceBackground.setMediaItem(mediaItem);
     _skipState = offset > 0
         ? BasicPlaybackState.skippingToNext
         : BasicPlaybackState.skippingToPrevious;
     _setState(state: BasicPlaybackState.connecting);
+    getLyrics(mediaItem.title);
     if (!mediaItem.id.contains("/watch?v=")) {
       var duration = await _audioPlayer.setUrl(mediaItem.id);
       mediaItem.duration = duration.inMilliseconds;
@@ -304,6 +310,12 @@ class MyBackgroundTask extends BackgroundAudioTask {
       });
     }
     return await _updatePaletteGenerator();
+  }
+
+  getLyrics(String title)async {
+    var lyrics = await getSongLyrics(title.split("-")[1].split("- Duration")[0]);
+    mediaItem.extras['lyrics'] = lyrics;
+    AudioServiceBackground.setMediaItem(mediaItem);
   }
 
   Future<void> _updatePaletteGenerator() async {
