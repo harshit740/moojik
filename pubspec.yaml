@@ -29,7 +29,9 @@ dependencies:
   palette_generator: ^0.2.2
   eva_icons_flutter: ^2.0.0
   flutter_svg: ^0.17.4
+  google_fonts:
   shared_preferences:
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
 
@@ -49,6 +51,10 @@ flutter:
      - assets/pause(1).svg
      - assets/down-group2.svg
      - assets/Group1(1).svg
+     - assets/fonts/Gilroy-Light.otf
+     - assets/fonts/Gilroy-ExtraBold.otf
+     - assets/fonts/Gilroy-Regular.ttf
+     - assets/fonts/Gilroy-ExtraboldItalic.ttf
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class. pause.svg   play-button.svg
@@ -70,6 +76,13 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: Gilroy
+      fonts:
+        - asset: fonts/Gilroy-Light.otf
+        - asset: fonts/Gilroy-ExtraBold.otf
+        - asset: fonts/Gilroy-Regular.ttf
+        - asset: fonts/Gilroy-ExtraboldItalic.ttf
   # fonts:
   #   - family: Schyler
   #     fonts:

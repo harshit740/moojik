@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/views/HomeView.dart';
@@ -32,6 +34,7 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: router.generateRoute,
       initialRoute: HomeViewRoute,
       theme: ThemeData(
+        fontFamily: 'Gilroy',
         brightness: Brightness.dark,
         primaryColorDark: Color(0xFF1B262C),
         backgroundColor: Color(0xFF1B262C),
@@ -39,6 +42,7 @@ class MyApp extends StatelessWidget {
         bottomAppBarColor: Color(0xFF1B262C),
       ),
       darkTheme: ThemeData(
+        fontFamily: 'Gilroy',
         brightness: Brightness.dark,
         primaryColorDark: Color(0xFF1B262C),
         primaryColor: Color(0xFF1B262C),
