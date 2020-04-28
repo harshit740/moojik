@@ -1,13 +1,15 @@
 import 'dart:io';
+
 import 'package:moojik/src/bloc/PlaylistBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 class DBProvider {
   DBProvider._();
+
   static final DBProvider db = DBProvider._();
   static Database _database;
 
@@ -57,7 +59,7 @@ class DBProvider {
       if (playlistID == null) {
         await addToPlayList(sondid, 1);
       } else {
-         await addToPlayList(sondid, playlistID);
+        await addToPlayList(sondid, playlistID);
       }
     } catch (e) {}
   }
@@ -66,6 +68,7 @@ class DBProvider {
     final db = await database;
     List<dynamic> res = await db.rawQuery('select * from playlists');
     List<PlayList> p = [];
+    p.add(PlayList('All', "AllSongs"));
     res.forEach((f) {
       var pl = PlayList(f['playlistid'].toString(), f['title']);
       p.add(pl);
@@ -87,17 +90,32 @@ class DBProvider {
     }
   }
 
+  Future<List<Song>> getAllSongs() async {
+    final db = await database;
+    var res = await db.rawQuery("SELECT * FROM  songs");
+    List<Song> sungs = [];
+    res.forEach((f) {
+      sungs.add(Song(f['title'], f['desc'], f['youtubeUrl'], f['localUrl'],
+          getBool(f['isDownloaded']), f['thumbnailUrl']));
+    });
+    return sungs;
+  }
+
   Future<List<Song>> getPlayList(playlistId) async {
     try {
-      final db = await database;
-      var res = await db.rawQuery(
-          "SELECT * FROM playlists_songs INNER JOIN Songs ON playlists_songs.song_id = SOngs.songid where playlists_songs.playlist_id=$playlistId");
-      List<Song> sungs = [];
-      res.forEach((f) {
-        sungs.add(Song(f['title'], f['desc'], f['youtubeUrl'], f['localUrl'],
-            getBool(f['isDownloaded']), f['thumbnailUrl']));
-      });
-      return sungs;
+      if (playlistId == 'All') {
+        return getAllSongs();
+      } else {
+        final db = await database;
+        var res = await db.rawQuery(
+            "SELECT * FROM playlists_songs INNER JOIN Songs ON playlists_songs.song_id = SOngs.songid where playlists_songs.playlist_id=$playlistId");
+        List<Song> sungs = [];
+        res.forEach((f) {
+          sungs.add(Song(f['title'], f['desc'], f['youtubeUrl'], f['localUrl'],
+              getBool(f['isDownloaded']), f['thumbnailUrl']));
+        });
+        return sungs;
+      }
     } catch (e) {
       print(e);
       return e;

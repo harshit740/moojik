@@ -1,18 +1,16 @@
-import 'dart:ffi';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
-import 'package:moojik/src/utils/songLyrics.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 
 class PlayerView extends StatefulWidget {
   @override
@@ -34,6 +32,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   Color colors;
   String playingfrom;
   bool showLyrics = false;
+
   void setRepeat(int repeatmode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt("isRepeatMode", repeatmode);
@@ -74,8 +73,8 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
 
   @override
   void didChangeDependencies() {
-    setInitStates();
     super.didChangeDependencies();
+    setInitStates();
   }
 
   Size screenSize(BuildContext context) {
@@ -224,7 +223,6 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                                   child: Text(
                                                     mediaItem.extras['lyrics'],
                                                     textAlign: TextAlign.center,
-
                                                     textDirection:
                                                         TextDirection.ltr,
                                                     textScaleFactor: 1.1,

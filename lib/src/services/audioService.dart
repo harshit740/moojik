@@ -113,8 +113,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       _queueIndex = -1;
       onSkipToNext();
     } else {
-      onSeekTo(0);
-      onPause();
+      onStop();
     }
   }
 

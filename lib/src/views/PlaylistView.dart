@@ -58,7 +58,9 @@ class PlayListViewState extends State<PlayListView> {
                                             Navigator.of(context).pop(true);
                                             if (snapshot
                                                     .data[index].playlistid ==
-                                                '1') {
+                                                '1' || snapshot
+                                                .data[index].playlistid ==
+                                                'All' ) {
                                               return;
                                             } else {
                                               playListBloc.delete(snapshot

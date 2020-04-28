@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import '../bloc/searchService.dart';
 import 'package:moojik/src/UI/SongWidget.dart';
+
+import '../bloc/searchService.dart';
 
 class SearchView extends StatelessWidget {
   // This widget is the root of your application.
@@ -18,6 +19,27 @@ class SearchView extends StatelessWidget {
     ]));
   }
 */
+
+  Size screenSize(BuildContext context) {
+    return MediaQuery.of(context).size;
+  }
+
+  double screenHeight(BuildContext context,
+      {double dividedBy = 1, double reducedBy = 0.0}) {
+    return (screenSize(context).height - reducedBy) / dividedBy;
+  }
+
+  double screenWidth(BuildContext context,
+      {double dividedBy = 1, double reducedBy = 0.0}) {
+    return (screenSize(context).width - reducedBy) / dividedBy;
+  }
+
+  double screenHeightExcludingToolbar(BuildContext context,
+      {double dividedBy = 1}) {
+    return screenHeight(context,
+        dividedBy: dividedBy, reducedBy: kToolbarHeight);
+  }
+
   Widget searchIcon() {
     return StreamBuilder(
         stream: searchBlox.issearching,
@@ -32,13 +54,14 @@ class SearchView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var hight = MediaQuery.of(context).size.height -
+        screenHeightExcludingToolbar(context);
     return SafeArea(
-      maintainBottomViewPadding: true,
-        child:Container(
-          padding: EdgeInsets.all(1),
-    child:Column(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
+        maintainBottomViewPadding: true,
+        child: Container(
+            height: hight,
+            padding: EdgeInsets.all(1),
+            child: Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
               TextField(
                 autofocus: true,
                 onChanged: searchBlox.changesearchTerm,
@@ -71,11 +94,10 @@ class SearchView extends StatelessWidget {
                       return Container(
                           child: Center(
                               child: Image(
-                                image: AssetImage('assets/SearchBarrAnimation.gif'),
-                              )));
+                        image: AssetImage('assets/SearchBarrAnimation.gif',),
+                      )));
                     }
                   }),
-            ]))
-    );
+            ])));
   }
 }
