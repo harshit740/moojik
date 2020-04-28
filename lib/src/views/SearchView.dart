@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../bloc/searchService.dart';
 import 'package:moojik/src/UI/SongWidget.dart';
 
@@ -31,45 +32,50 @@ class SearchView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child:Column(
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-      TextField(
-        onChanged: searchBlox.changesearchTerm,
-        onSubmitted: searchBlox.search,
-        keyboardType: TextInputType.text,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          hintText: 'Search Songs',
-          labelText: 'Search',
-          suffix: searchIcon(),
-        ),
-      ),
-      StreamBuilder(
-          stream: searchBlox.songs,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Expanded(
-                  child: ListView.builder(
-                      itemCount: snapshot.data.length,
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext ctxt, int index) {
-                        return SongWidget(
-                          song: snapshot.data[index],
-                          parentWIdgetname: 'Searched Songs',
-                        );
-                      }));
-            } else {
-              return Container(
-                  child: Center(
-                      child: Image(
-                image: AssetImage('assets/SearchBarrAnimation.gif'),
-              )));
-            }
-          }),
-    ]));
+    return SafeArea(
+      maintainBottomViewPadding: true,
+        child:Container(
+          padding: EdgeInsets.all(1),
+    child:Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              TextField(
+                autofocus: true,
+                onChanged: searchBlox.changesearchTerm,
+                onSubmitted: searchBlox.search,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  hintText: 'Search Songs',
+                  suffix: searchIcon(),
+                ),
+              ),
+              StreamBuilder(
+                  stream: searchBlox.songs,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Expanded(
+                          child: ListView.builder(
+                              itemCount: snapshot.data.length,
+                              shrinkWrap: true,
+                              itemBuilder: (BuildContext ctxt, int index) {
+                                return SongWidget(
+                                  song: snapshot.data[index],
+                                  parentWIdgetname: 'Searched Songs',
+                                );
+                              }));
+                    } else {
+                      return Container(
+                          child: Center(
+                              child: Image(
+                                image: AssetImage('assets/SearchBarrAnimation.gif'),
+                              )));
+                    }
+                  }),
+            ]))
+    );
   }
 }

@@ -3,6 +3,7 @@ import 'package:html/parser.dart' as parser;
 import 'package:html/dom.dart' as dom;
 
 getSongLyrics(query) async {
+
   print("query = $query lyrics");
   var url = 'https://www.google.com/search?q=$query+ lyrics';
   Map<String, String> headers = {
@@ -12,5 +13,6 @@ getSongLyrics(query) async {
   var response = await http.get(url,headers: headers);
   dom.Document document =  parser.parse(response.body);
   var lyrics = document.querySelectorAll('div.hwc');
+
   return lyrics.first.children.first.children.first.children.first.innerHtml;
 }

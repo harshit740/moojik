@@ -42,7 +42,7 @@ class PlayListViewState extends State<PlayListView> {
                       itemBuilder: (BuildContext ctxt, int index) {
                         return Dismissible(
                             key: UniqueKey(),
-                            background: Container(color: Colors.red),
+                            background: Container(color: Colors.black12),
                             direction: DismissDirection.endToStart,
                             confirmDismiss: (DismissDirection direction) async {
                               await showDialog(
