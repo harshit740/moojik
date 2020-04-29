@@ -12,25 +12,24 @@ import 'package:moojik/src/services/BaseService.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Database.dart';
+
 class PlayerView extends StatefulWidget {
   @override
   PlayerViewState createState() => PlayerViewState();
 }
 
+AudioFun _myService = locator<BaseService>();
+
 class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
-  bool isPlaying;
-  bool isStarted;
   AudioFun _myService = locator<BaseService>();
   final BehaviorSubject<double> _dragPositionSubject =
       BehaviorSubject.seeded(null);
-  var lyrics = "Geeting your lyrics";
   Song currentSong;
   int isRepeatMode;
   var som;
-  bool isGetigFromYoutube = false;
-  Rect region;
   Color colors;
-  String playingfrom;
+  String playingFrom;
   bool showLyrics = false;
 
   void setRepeat(int repeatmode) async {
@@ -43,26 +42,27 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
 
   setInitStates() async {
     AudioService.currentMediaItemStream.listen((mediaItem) {
-      if (mediaItem != null) {
-        setState(() {
-          playingfrom = mediaItem.album;
-        });
-        if (mediaItem.extras != null &&
-            mediaItem.extras.containsKey('colors')) {
-          colors = Color(int.parse(mediaItem.extras['colors']
-              .toString()
-              .split("Color(")[1]
-              .split(')')[0]));
+      if (mounted) {
+        if (mediaItem != null) {
           setState(() {
-            colors = colors;
+            playingFrom = mediaItem.album;
           });
+          if (mediaItem.extras != null &&
+              mediaItem.extras.containsKey('colors')) {
+            colors = Color(int.parse(mediaItem.extras['colors']
+                .toString()
+                .split("Color(")[1]
+                .split(')')[0]));
+            setState(() {
+              colors = colors;
+            });
+          }
         }
       }
     });
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isRepeatMode = prefs.getInt("isRepeatMode");
-      isGetigFromYoutube = false;
     });
   }
 
@@ -76,6 +76,8 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
     super.didChangeDependencies();
     setInitStates();
   }
+
+  void setStet() {}
 
   Size screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
@@ -100,7 +102,7 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
   AppBar appBar() {
     return AppBar(
       centerTitle: true,
-      title: Text("Playing from $playingfrom"),
+      title: Text("Playing from $playingFrom"),
       elevation: 0,
       backgroundColor: colors != null ? colors : Color(0xFF1B262C),
       actions: <Widget>[],
@@ -146,8 +148,8 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
       minRedius = 100;
       maxRedius = 110;
       virticalMarginBetweenControls = 0;
-      bodyBottomPadding = 2;
-      iconSize = 50;
+      bodyBottomPadding = 0;
+      iconSize = 40;
     }
     return Scaffold(
         backgroundColor: colors != null ? colors : Color(0xFF1B262C),
@@ -214,9 +216,9 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                             secondChild: CircleAvatar(
                                                 backgroundColor: colors,
                                                 maxRadius:
-                                                    maxRedius.toDouble() + 20,
+                                                    maxRedius.toDouble() + (hightExludingAppbar < 598 ? 5 : 20),
                                                 minRadius:
-                                                    minRedius.toDouble() + 20,
+                                                    minRedius.toDouble() + (hightExludingAppbar < 598 ? 5 : 20),
                                                 child: SingleChildScrollView(
                                                   scrollDirection:
                                                       Axis.vertical,
@@ -306,14 +308,21 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                             icon: Icon(Icons.featured_play_list,
                                                 color: Colors.white, size: 35),
                                             onPressed: null),
-                                        IconButton(
-                                            icon: SvgPicture.asset(
-                                              'assets/down-group2.svg',
-                                              color: Colors.white,
-                                              width: 60,
-                                              height: 60,
-                                            ),
-                                            onPressed: null),
+                                        mediaItem.extras['isDownloaded'] ==
+                                                false
+                                            ? IconButton(
+                                                icon: SvgPicture.asset(
+                                                  'assets/down-group2.svg',
+                                                  color: Colors.white,
+                                                  width: 60,
+                                                  height: 60,
+                                                ),
+                                                onPressed:
+                                                    addtoDownload(context))
+                                            : IconButton(
+                                                icon: Icon(EvaIcons
+                                                    .checkmarkCircleOutline),
+                                                onPressed: null),
                                       ],
                                     ),
                                   ),
@@ -553,6 +562,22 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
       );
     }
   }
+}
+
+addtoDownload(context) async {
+  var song = Song(
+      AudioService.currentMediaItem.title,
+      " ",
+      AudioService.currentMediaItem.extras['youtubeUrl'],
+      "",
+      AudioService.currentMediaItem.extras['isDownloaded'],
+      AudioService.currentMediaItem.artUri);
+  await DBProvider.db.addSongtoDb(song);
+  _myService.addToDownload(song.youtubeUrl);
+  Scaffold.of(context)
+    ..removeCurrentSnackBar()
+    ..showSnackBar(SnackBar(
+        content: Text("${song.title} is added DownloadQueue Keep Calm ")));
 }
 
 class ScreenState {

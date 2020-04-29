@@ -7,7 +7,6 @@ import 'package:html/dom.dart' as dom;
 List<Song> parseVideo(response) {
   dom.Document document = parser.parse(response);
   var videos = document.querySelectorAll('h3.yt-lockup-title');
-  //var channels = document.getElementsByClassName('yt-uix-sessionlink spf-link');
   List<Song> youtubeVideolinkMap = [];
   videos.forEach((f) {
     var link = f.getElementsByTagName('a');

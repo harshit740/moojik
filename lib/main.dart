@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/views/HomeView.dart';
@@ -15,20 +14,11 @@ void main() {
   setupServiceLocator();
 }
 
-void connect() async {
-  await AudioService.connect();
-}
-
-void disconnect() {
-  AudioService.disconnect();
-}
-
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
 
   @override
   Widget build(BuildContext context) {
-    connect();
     return MaterialApp(
       title: 'Moojikflux',
       onGenerateRoute: router.generateRoute,
@@ -65,10 +55,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
-
   final String title;
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -161,6 +148,7 @@ class _MyHomePageState extends State<MyHomePage>
         length: 3,
         initialIndex: 0,
         child: Scaffold(
+          resizeToAvoidBottomPadding: false,
           appBar:AppBar(
             elevation: 0,
             backgroundColor: Color(0xff000000),

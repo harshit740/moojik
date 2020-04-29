@@ -61,7 +61,9 @@ class SearchView extends StatelessWidget {
         child: Container(
             height: hight,
             padding: EdgeInsets.all(1),
-            child: Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
+            child: Column(
+
+                mainAxisSize: MainAxisSize.max, children: <Widget>[
               TextField(
                 autofocus: true,
                 onChanged: searchBlox.changesearchTerm,

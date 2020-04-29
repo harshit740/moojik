@@ -1,13 +1,14 @@
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
+import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/UI/addSongtoPlaylist.dart';
 import 'package:moojik/src/UI/newPlaylistDialog.dart';
+import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:moojik/src/Database.dart';
 
 _navigateAndaddToPlayList(Song song, BuildContext context) async {
   final String playlistID = await displayAddtoDialog(context);
@@ -35,9 +36,9 @@ _navigateAndaddToPlayList(Song song, BuildContext context) async {
 
 class SongWidget extends StatelessWidget {
   AudioFun _myService = locator<BaseService>();
-  final channel = MethodChannel("com.moojikflux/music");
   final Song song;
   final parentWIdgetname;
+
   addtoLikedSongs(song, context) {
     DBProvider.db.addToLikedSOngs(song, 1);
     final snackBar = SnackBar(content: Text('Added to Liked SOong'));
@@ -49,11 +50,17 @@ class SongWidget extends StatelessWidget {
   }
 
   SongWidget({Key key, this.song, this.parentWIdgetname}) : super(key: key);
+
   Widget getIcon(title) {
     if (song.title.contains('- Channel')) {
       return Padding(
         padding: EdgeInsets.only(right: 10),
         child: Icon(Icons.account_circle),
+      );
+    } else if (song.title.contains('- Playlist')) {
+      return Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: Icon(Icons.playlist_play),
       );
     } else {
       return Padding(
@@ -67,8 +74,8 @@ class SongWidget extends StatelessWidget {
     if (this.parentWIdgetname == 'Searched Songs') {
       if (!song.title.contains('- Channel')) {
         return GestureDetector(
-          onTap: () => addToPlayList(song, context),
-          child: Icon(Icons.library_add));
+            onTap: () => addToPlayList(song, context),
+            child: Icon(Icons.library_add));
       } else {
         return Icon(Icons.do_not_disturb);
       }
@@ -89,8 +96,7 @@ class SongWidget extends StatelessWidget {
           size: 40,
         ),
         onTap: () async {
-          await channel.invokeMethod(
-              "addToDownloadQueue", song.youtubeUrl.split("/watch?v=")[1]);
+          _myService.addToDownload(song.youtubeUrl);
         },
       );
     }
@@ -101,7 +107,14 @@ class SongWidget extends StatelessWidget {
     return Container(
         padding: EdgeInsets.all(15.0),
         child: InkWell(
-            onTap: () => _myService.playOneSong(song, parentWIdgetname),
+            onTap: () {
+              if (song.title.contains("- Playlist")) {
+                Navigator.pushNamed(context, PlayListDetailRoute,
+                    arguments: PlayList(song.youtubeUrl, song.title));
+              } else {
+                _myService.playOneSong(song, parentWIdgetname);
+              }
+            },
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
@@ -111,7 +124,9 @@ class SongWidget extends StatelessWidget {
                       child: Text(
                         "${song.title}",
                       )),
-                 parentWIdgetname != "Searched Songs"?getDownloadIcon():Divider(),
+                  parentWIdgetname != "Searched Songs"
+                      ? getDownloadIcon()
+                      : Divider(),
                   Column(
                     children: <Widget>[getAddtoLikeIcon(song, context)],
                   )

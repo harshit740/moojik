@@ -11,8 +11,6 @@ class HomeView extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return GridView.count(
-                // Create a grid with 2 columns. If you change the scrollDirection to
-                // horizontal, this produces 2 rows.
                 crossAxisCount: 2,
                 padding: EdgeInsets.all(5),
                 children: List.generate(snapshot.data.length, (index) {
@@ -24,8 +22,6 @@ class HomeView extends StatelessWidget {
                     ),
                     child: Stack(
                       children: <Widget>[
-                        Image.network("https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
-                          colorBlendMode: BlendMode.softLight),
                        Center(child:  Opacity(child:Text(
                          "${snapshot.data[index].title}",
                          style: TextStyle(

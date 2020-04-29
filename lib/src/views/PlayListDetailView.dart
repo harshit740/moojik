@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:moojik/src/UI/songList.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:moojik/src/utils/youtubePlaylist.dart';
 
 import '../../service_locator.dart';
 import '../Database.dart';
@@ -63,7 +64,9 @@ class PlayListDetailView extends StatelessWidget {
               ],
             )),
             FutureBuilder<List<Song>>(
-                future: DBProvider.db.getPlayList(playlistItem.playlistid),
+                future: playlistItem.playlistid.contains("list=")
+                    ? getYoutubePlaylist(playlistItem.playlistid)
+                    : DBProvider.db.getPlayList(playlistItem.playlistid),
                 builder: (context, snapshot) {
                   if (snapshot.hasData == false) {
                     return Center(child: CircularProgressIndicator());

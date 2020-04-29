@@ -65,7 +65,7 @@ class AudioFun extends BaseService {
             ? song.thumbnailUrl
             : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
         displaySubtitle: song.title,
-        extras: {"youtubeUrl": song.youtubeUrl}));
+        extras: {"youtubeUrl": song.youtubeUrl,"isDownloaded":false}));
     await AudioService.playFromMediaId(song.youtubeUrl);
   }
 
@@ -85,7 +85,7 @@ class AudioFun extends BaseService {
         album: "hgh",
         artUri: arguments[2],
         displaySubtitle: oneSong.title,
-        extras: {"youtubeUrl": oneSong.youtubeUrl}));
+        extras: {"youtubeUrl": oneSong.youtubeUrl,"isDownloaded":oneSong.isDownloaded}));
     await AudioService.skipToNext();
   }
 
@@ -110,7 +110,10 @@ class AudioFun extends BaseService {
             extras: {"youtubeUrl": f.youtubeUrl}));
       });
       await AudioService.playFromMediaId(songs[0].youtubeUrl);
-
     }
+  }
+  addToDownload(String youtubeUrl)async{
+    await platformMethodChannel.invokeMethod(
+        "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
   }
 }

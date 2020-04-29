@@ -321,17 +321,14 @@ class MyBackgroundTask extends BackgroundAudioTask {
     if (mediaItem.artUri != null &&
         mediaItem.artUri != "" &&
         !mediaItem.extras.containsKey('colors')) {
-      ImageProvider image = NetworkImage(mediaItem.artUri);
-      paletteGenerator = await PaletteGenerator.fromImageProvider(image,
-          maximumColorCount: 6, timeout: Duration(seconds: 50));
+      paletteGenerator = await PaletteGenerator.fromImageProvider(NetworkImage(mediaItem.artUri),
+          maximumColorCount: 9, timeout: Duration(seconds: 50));
       if (paletteGenerator.darkMutedColor != null) {
         colors = paletteGenerator.darkMutedColor.color;
       } else if (paletteGenerator.darkVibrantColor != null) {
         colors = paletteGenerator.darkVibrantColor.color;
-      } else if (paletteGenerator.dominantColor != null) {
-        colors = paletteGenerator.dominantColor.color;
-      } else if (paletteGenerator.colors != null) {
-        colors = paletteGenerator.colors.first;
+      } else {
+        colors = Color(0xFF1B262C);
       }
       mediaItem.extras['colors'] = colors.toString();
       AudioServiceBackground.setMediaItem(mediaItem);
