@@ -5,7 +5,10 @@ import 'package:audio_service/audio_service.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
+import 'package:moojik/src/bloc/playerBloc.dart';
+import 'package:moojik/src/models/ScreenStateModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
 import 'package:moojik/src/services/BaseService.dart';
@@ -21,31 +24,47 @@ class PlayerView extends StatefulWidget {
 
 AudioFun _myService = locator<BaseService>();
 
-class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
+class PlayerViewState extends State<PlayerView>
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   AudioFun _myService = locator<BaseService>();
   final BehaviorSubject<double> _dragPositionSubject =
       BehaviorSubject.seeded(null);
   Song currentSong;
   int isRepeatMode;
-  var som;
   Color colors;
-  String playingFrom;
   bool showLyrics = false;
+  MediaItem currentMediaItem;
+  bool isDownloading = false;
+  bool isLikedSong = false;
+  String playingFrom = " ";
 
-  void setRepeat(int repeatmode) async {
+  void setRepeat(int repeatMode) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("isRepeatMode", repeatmode);
+    await prefs.setInt("isRepeatMode", repeatMode);
     setState(() {
-      isRepeatMode = repeatmode;
+      isRepeatMode = repeatMode;
     });
   }
 
   setInitStates() async {
+    initDownloaderStat();
     AudioService.currentMediaItemStream.listen((mediaItem) {
       if (mounted) {
         if (mediaItem != null) {
+          currentMediaItem = mediaItem;
+          isInLikedSong(mediaItem.extras['youtubeUrl']);
           setState(() {
+            currentMediaItem = AudioService.currentMediaItem;
             playingFrom = mediaItem.album;
+          });
+          _myService.downloadQueue.forEach((f) {
+            if (f.containsKey(
+                AudioService.currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1])) {
+                setState(() {
+                  isDownloading = f[AudioService.currentMediaItem.extras['youtubeUrl']
+                      .split("/watch?v=")[1]];
+                });
+            }
           });
           if (mediaItem.extras != null &&
               mediaItem.extras.containsKey('colors')) {
@@ -60,9 +79,27 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
         }
       }
     });
+
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isRepeatMode = prefs.getInt("isRepeatMode");
+    });
+  }
+
+  initDownloaderStat() {
+    playerStates.isDownloading.listen((onData) async {
+      onData.forEach((f) {
+        if (f.containsKey(
+            currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1])) {
+          if (mounted) {
+            setState(() {
+              isDownloading = f[
+                  currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1]];
+            });
+          }
+        }
+        ;
+      });
     });
   }
 
@@ -76,8 +113,6 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
     super.didChangeDependencies();
     setInitStates();
   }
-
-  void setStet() {}
 
   Size screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
@@ -215,10 +250,16 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                             secondCurve: Curves.easeInOut,
                                             secondChild: CircleAvatar(
                                                 backgroundColor: colors,
-                                                maxRadius:
-                                                    maxRedius.toDouble() + (hightExludingAppbar < 598 ? 5 : 20),
-                                                minRadius:
-                                                    minRedius.toDouble() + (hightExludingAppbar < 598 ? 5 : 20),
+                                                maxRadius: maxRedius
+                                                        .toDouble() +
+                                                    (hightExludingAppbar < 598
+                                                        ? 5
+                                                        : 20),
+                                                minRadius: minRedius
+                                                        .toDouble() +
+                                                    (hightExludingAppbar < 598
+                                                        ? 5
+                                                        : 20),
                                                 child: SingleChildScrollView(
                                                   scrollDirection:
                                                       Axis.vertical,
@@ -297,32 +338,45 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: <Widget>[
-                                        IconButton(
-                                            icon: Icon(
-                                              EvaIcons.heart,
-                                              size: 35,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: null),
+                                        isLikedSong
+                                            ? IconButton(
+                                                icon: Icon(
+                                                  EvaIcons.heart,
+                                                  size: 35,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () =>
+                                                    addInLikedSong(0))
+                                            : IconButton(
+                                                icon: Icon(
+                                                  EvaIcons.heartOutline,
+                                                  size: 35,
+                                                  color: Colors.white,
+                                                ),
+                                                onPressed: () =>
+                                                    addInLikedSong(1)),
                                         IconButton(
                                             icon: Icon(Icons.featured_play_list,
                                                 color: Colors.white, size: 35),
-                                            onPressed: null),
-                                        mediaItem.extras['isDownloaded'] ==
-                                                false
-                                            ? IconButton(
-                                                icon: SvgPicture.asset(
-                                                  'assets/down-group2.svg',
-                                                  color: Colors.white,
-                                                  width: 60,
-                                                  height: 60,
-                                                ),
-                                                onPressed:
-                                                    addtoDownload(context))
-                                            : IconButton(
-                                                icon: Icon(EvaIcons
-                                                    .checkmarkCircleOutline),
-                                                onPressed: null),
+                                            onPressed: ()=> Navigator.pushNamed(context, CurrentPlaylistRoute)),
+                                        isDownloading
+                                            ? CircularProgressIndicator()
+                                            : mediaItem.extras[
+                                                        "isDownloaded"] ==
+                                                    "false"
+                                                ? IconButton(
+                                                    icon: SvgPicture.asset(
+                                                      'assets/down-group2.svg',
+                                                      color: Colors.white,
+                                                      width: 60,
+                                                      height: 60,
+                                                    ),
+                                                    onPressed: () =>
+                                                        addtoDownload(context))
+                                                : IconButton(
+                                                    icon: Icon(EvaIcons
+                                                        .checkmarkCircleOutline),
+                                                    onPressed: null),
                                       ],
                                     ),
                                   ),
@@ -562,6 +616,41 @@ class PlayerViewState extends State<PlayerView> with WidgetsBindingObserver {
       );
     }
   }
+
+  isInLikedSong(String youtubeUrl) async {
+    if (await DBProvider.db.isLikedSOng(youtubeUrl)) {
+      setState(() {
+        isLikedSong = true;
+      });
+    } else {
+      if(mounted){
+      setState(() {
+        isLikedSong = false;
+      });}
+    }
+  }
+
+  addInLikedSong(removeOrAdd) async {
+    if (removeOrAdd == 1) {
+      var song = Song(
+          AudioService.currentMediaItem.title,
+          " ",
+          AudioService.currentMediaItem.extras['youtubeUrl'],
+          "",
+          false,
+          AudioService.currentMediaItem.artUri);
+      await DBProvider.db.addToLikedSongs(song, null);
+      isInLikedSong(AudioService.currentMediaItem.extras['youtubeUrl']);
+    } else if (removeOrAdd == 0) {
+      await DBProvider.db.removeSongFromPlaylist(
+          AudioService.currentMediaItem.extras['youtubeUrl'], 1);
+      await isInLikedSong(AudioService.currentMediaItem.extras['youtubeUrl']);
+    }
+  }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 addtoDownload(context) async {
@@ -570,20 +659,22 @@ addtoDownload(context) async {
       " ",
       AudioService.currentMediaItem.extras['youtubeUrl'],
       "",
-      AudioService.currentMediaItem.extras['isDownloaded'],
+      false,
       AudioService.currentMediaItem.artUri);
-  await DBProvider.db.addSongtoDb(song);
-  _myService.addToDownload(song.youtubeUrl);
-  Scaffold.of(context)
-    ..removeCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-        content: Text("${song.title} is added DownloadQueue Keep Calm ")));
-}
-
-class ScreenState {
-  final List<MediaItem> queue;
-  final MediaItem mediaItem;
-  final PlaybackState playbackState;
-
-  ScreenState(this.queue, this.mediaItem, this.playbackState);
+  if (AudioService.currentMediaItem.album == "Searched Songs") {
+    await DBProvider.db.addSongtoDb(song);
+  }
+  var va = await _myService.addToDownload(song.youtubeUrl);
+  if (va) {
+    Scaffold.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+          content: Text("${song.title} is added DownloadQueue Keep Calm ")));
+  } else {
+    Scaffold.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+          content: Text(
+              "${song.title} is Either in DownloadQueue or already Downnloaded ")));
+  }
 }

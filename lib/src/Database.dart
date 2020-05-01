@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:moojik/src/bloc/PlaylistBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
+import 'package:moojik/src/utils/youtubePlaylist.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -37,6 +38,18 @@ class DBProvider {
     });
   }
 
+  Future<int> getSongId(String youtubeUrl) async {
+    try {
+      final db = await database;
+      var songId = await db.rawQuery(
+          "select songid from songs where youtubeUrl = '$youtubeUrl'");
+      return songId[0]['songid'];
+    } catch (e) {
+      print(e);
+      return e;
+    }
+  }
+
   addSongtoDb(song) async {
     final db = await database;
     try {
@@ -53,7 +66,7 @@ class DBProvider {
     }
   }
 
-  addToLikedSOngs(song, playlistID) async {
+  addToLikedSongs(song, playlistID) async {
     try {
       var sondid = await addSongtoDb(song);
       if (playlistID == null) {
@@ -64,11 +77,27 @@ class DBProvider {
     } catch (e) {}
   }
 
+  isLikedSOng(String youtubeUrl) async {
+    try {
+      final db = await database;
+      var songId = await getSongId(youtubeUrl);
+      var isExist = await db.rawQuery(
+          "SELECT id FROM playlists_songs WHERE song_id=$songId and  playlist_id = 1");
+      if (isExist.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<List<PlayList>> getAllPlayList() async {
     final db = await database;
     List<dynamic> res = await db.rawQuery('select * from playlists');
     List<PlayList> p = [];
-    p.add(PlayList('All', "AllSongs"));
+    p.add(PlayList('All', "All Songs"));
     res.forEach((f) {
       var pl = PlayList(f['playlistid'].toString(), f['title']);
       p.add(pl);
@@ -139,15 +168,38 @@ class DBProvider {
         .delete("playlists", where: "playlistid = ?", whereArgs: [playlistid]);
   }
 
+  removeSongFromPlaylist(String youtubeUrl, int playListId) async {
+    try {
+      final db = await database;
+      var songId = await getSongId(youtubeUrl);
+      var something = await db.delete("playlists_songs",
+          where: "playlist_id = ? and song_id=?",
+          whereArgs: [playListId, songId]);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future addYoutubePlaylistToDb(PlayList playList) async {
+    List<Song> songs = await getYoutubePlaylist(playList.playlistid);
+    var res = await createPlaylist(playList.title.split("- Playlist")[0]);
+    songs.forEach((song) async {
+      await addToLikedSongs(song, res.toString());
+    });
+    playListBloc.gettAllPlaylistStream();
+    return res;
+  }
+
+  //UtilFunction
   getBool(data) {
-    var dataa = data.toString();
-    if (dataa.contains("false")) {
+    data = data.toString();
+    if (data.contains("false")) {
       return false;
-    } else if (dataa.contains("1")) {
+    } else if (data.contains("1")) {
       return true;
-    } else if (dataa.contains("true")) {
+    } else if (data.contains("true")) {
       return true;
-    } else if (dataa.contains("0")) {
+    } else if (data.contains("0")) {
       return false;
     } else {
       return false;

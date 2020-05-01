@@ -7,11 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationManagerCompat
 import com.github.kiulian.downloader.OnYoutubeDownloadListener
 import com.github.kiulian.downloader.YoutubeDownloader
+import com.moojik.moojik.MainActivity.Companion.CHANNEL
+import com.moojik.moojik.MainActivity.Companion.flutterEngineInstance
 import io.flutter.Log
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.util.PathUtils
 import java.io.File
 import java.io.IOException
@@ -19,39 +24,51 @@ import java.io.IOException
 
 class DownloadService : JobIntentService() {
     companion object {
+        lateinit var channel: MethodChannel
+        var downloadQueue = ArrayList<HashMap<String, Boolean>>()
         var JobId = 1001
         fun enQueueDownload(context: Context, intent: Intent) {
             val youtubeUrl = intent.getStringExtra("youtubeUrl")
-            Log.d("Enqueue Download OnHandelWork", "youtubeUrl $youtubeUrl")
+            Log.d("DownloadService", "DownloadService Started")
+            if (downloadQueue.isNotEmpty()) {
+                Log.d("DownloadService", "DownloadService Started")
+                downloadQueue.forEach {
+                    if (it.containsKey(youtubeUrl)) return
+                }
+            }
+            val value = HashMap<String, Boolean>()
+            value[youtubeUrl] = true
+            downloadQueue.add(value)
             enqueueWork(context, DownloadService::class.java, JobId, intent)
         }
     }
 
-    lateinit var mydatabase: SQLiteDatabase
-    lateinit var file: File
-    lateinit var outDir: File
+    private lateinit var moojikDatabase: SQLiteDatabase
+    private lateinit var file: File
+    private lateinit var outDir: File
     private lateinit var builder: Notification.Builder
     private lateinit var notification: Notification
 
     override fun onCreate() {
+        channel = MethodChannel(flutterEngineInstance.dartExecutor.binaryMessenger, CHANNEL)
         try {
             outDir = File(PathUtils.getDataDirectory(this), "/Moojik/")
-            file = File(PathUtils.getDataDirectory(this) ,"MoojkFlux.db")
-            mydatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
+            file = File(PathUtils.getDataDirectory(this), "MoojkFlux.db")
+            moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
             Log.d("DownloadService", "DownloadService Started")
-            //Log.d("DownloadService","DownloadService Started ${songs.getString(0)}");
             createNotificationChannel()
             if (!outDir.exists()) {
                 val mkdirs = outDir.mkdirs()
                 if (!mkdirs) throw IOException("Could not create output directory: ${outDir.absolutePath}")
             }
         } catch (e: Exception) {
-            mydatabase.close()
+            moojikDatabase.close()
         }
         super.onCreate()
     }
 
     override fun onHandleWork(intent: Intent) {
+
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setContentTitle("Starting")
             builder.setOngoing(true)
@@ -69,6 +86,11 @@ class DownloadService : JobIntentService() {
         suspend { }
         video.downloadAsync(video.audioFormats().run { this[this.size - 1] }, outDir, youtubeUrl, object : OnYoutubeDownloadListener {
             override fun onDownloading(progress: Int) {
+                downloadQueue.forEachIndexed { index, hashMap ->
+                    if (hashMap.containsKey(youtubeUrl)) {
+                        downloadQueue[index][youtubeUrl] = false
+                    }
+                }
                 NotificationManagerCompat.from(applicationContext).apply {
                     builder.setContentText("Downloading...")
                             .setProgress(100, progress, false)
@@ -84,7 +106,7 @@ class DownloadService : JobIntentService() {
                     builder.setOngoing(true)
                     notify(2, builder.build())
                 }
-                updateDb(youtubeUrl, file.absolutePath,video.details().thumbnails().run { this[this.size - 1] }.toString())
+                updateDb(youtubeUrl, file.absolutePath, video.details().thumbnails().run { this[this.size - 1] }.toString())
             }
 
             override fun onError(throwable: Throwable?) {
@@ -93,27 +115,42 @@ class DownloadService : JobIntentService() {
                     builder.setOngoing(false)
                     notify(2, builder.build())
                 }
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
         })
 
     }
 
-    fun updateDb(youtubeurl: String, localUrl: String,thumbnailUrl:String) {
+    fun updateDb(youtubeurl: String, localUrl: String, thumbnailUrl: String) {
+        val list = ArrayList<String>()
+        list.add(youtubeurl)
+        list.add(localUrl)
+        Handler(Looper.getMainLooper()).post {
+            channel.invokeMethod("setDownloadComplete", list)
+            MainActivity.updateDownloadStatus(list);
+        }
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setContentText("DownloadComplete")
             builder.setAutoCancel(true)
+            builder.setProgress(0, 0, false)
             builder.setOngoing(false)
             notify(2, builder.build())
         }
         val youtubeUrl = "/watch?v=$youtubeurl"
-        mydatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
+        moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
         val query = "update songs set isDownloaded=1 ,localUrl='$localUrl' ,thumbnailUrl='$thumbnailUrl' where youtubeUrl = '$youtubeUrl'"
-        mydatabase.execSQL(query)
-        mydatabase.close()
+        moojikDatabase.execSQL(query)
+        moojikDatabase.close()
+        downloadQueue.forEachIndexed { index, hashMap ->
+            if (hashMap.containsKey(youtubeUrl)) {
+                downloadQueue[index][youtubeUrl] = false
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod("setDownloadComplete", downloadQueue)
+                    MainActivity.updateDownloadStatus(list);
+                }
+            }
+        }
     }
-
 
     private fun createNotificationChannel() {
         builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

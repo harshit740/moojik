@@ -176,7 +176,6 @@ class MyBackgroundTask extends BackgroundAudioTask {
       final prefs = await SharedPreferences.getInstance();
       List<String> data = prefs.getStringList(mediaItem.id);
       if (data != null) {
-        print(DateTime.now().difference(DateTime.parse(data[2])));
         if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 8) {
           mediaItem.artUri = data[1];
           mediaItem.id = data[0];
@@ -207,6 +206,20 @@ class MyBackgroundTask extends BackgroundAudioTask {
         _queueIndex = -1;
         AudioServiceBackground.setQueue(_queue);
         break;
+      case "UpdateMediaItem":
+        if (_mediaItems.containsKey("/watch?v=${arguments[0]}")) {
+          MediaItem currentItem = _mediaItems["/watch?v=${arguments[0]}"];
+          currentItem.id = arguments[1];
+          currentItem.extras['isDownloaded'] = true;
+          _mediaItems["/watch?v=${arguments[0]}"] = currentItem;
+          if(mediaItem.extras["youtubeUrl"] == "/watch?v=${arguments[0]}"){
+            AudioServiceBackground.setMediaItem(currentItem);
+          }
+          int index = _queue.indexWhere((MediaItem test) {
+            return test.extras['youtubeUrl'] == "/watch?v=${arguments[0]}" ? true : false;
+          });
+          if (index >= 0) _queue[index] = currentItem;
+        }
     }
     super.onCustomAction(name, arguments);
   }
@@ -312,7 +325,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   }
 
   getLyrics(String title)async {
-    var lyrics = await getSongLyrics(title.split("-")[1].split("- Duration")[0]);
+    var lyrics = await getSongLyrics(title.replaceAll(" - "," ").split("- Duration")[0]);
     mediaItem.extras['lyrics'] = lyrics;
     AudioServiceBackground.setMediaItem(mediaItem);
   }

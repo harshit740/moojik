@@ -17,9 +17,16 @@ import kotlin.concurrent.thread
 class MainActivity : FlutterActivity() {
     companion object {
         const val CHANNEL = "com.moojikflux/music"
+        lateinit var flutterEngineInstance: FlutterEngine;
+        lateinit var channel: MethodChannel
+        fun updateDownloadStatus(list:ArrayList<String>){
+            Handler(Looper.getMainLooper()).post {
+                channel.invokeMethod("setDownloadComplete", list)
+            }
+        }
+        
     }
 
-    private lateinit var channel: MethodChannel
     /** This is a temporary workaround to avoid a memory leak in the Flutter framework  */
     override fun provideFlutterEngine(context: Context): FlutterEngine? { // Instantiate a FlutterEngine.
         val flutterEngine = FlutterEngine(context.applicationContext)
@@ -29,9 +36,9 @@ class MainActivity : FlutterActivity() {
         )
         return flutterEngine
     }
-
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
+        flutterEngineInstance = flutterEngine
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getYoutubeLenk") {
@@ -60,7 +67,5 @@ class MainActivity : FlutterActivity() {
                 channel.invokeMethod("setYoutubeLenk", videoDetails)
             }
         }
-
     }
-
 }

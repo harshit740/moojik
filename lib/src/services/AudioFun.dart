@@ -1,16 +1,17 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
 import 'package:moojik/src/services/audioService.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:convert' as convert;
 class AudioFun extends BaseService {
   static const platformMethodChannel =
       const MethodChannel('com.moojikflux/music');
   Song oneSong;
-
+  List<Map<String, dynamic>> downloadQueue = [];
   List<Song> songQueue = [];
 
   AudioFun() {
@@ -26,7 +27,7 @@ class AudioFun extends BaseService {
       notificationColor: 0xFF2196f3,
       androidNotificationIcon: 'mipmap/ic_launcher',
       enableQueue: true,
-      resumeOnClick: true, 
+      resumeOnClick: true,
     );
   }
 
@@ -48,25 +49,15 @@ class AudioFun extends BaseService {
       case "setYoutubeLenk":
         setUrl(call.arguments);
         return new Future.value("");
+        break;
+       case "setDownloadComplete":
+         downloadQueue.forEach((f){
+           if(f.containsKey(call.arguments[0])) f[call.arguments[0]] = false;
+         });
+         AudioService.customAction("UpdateMediaItem",call.arguments);
+         playerStates.triggerIsDownloading(downloadQueue);
+         return new Future.value("");
     }
-  }
-
-  @override
-  playOneSong(Song song, String album) async {
-    if (!AudioService.running) {
-      await startAudioService();
-    }
-    debugPrint("${song.isDownloaded} ${song.localUrl} ");
-    await AudioService.addQueueItem(MediaItem(
-        id: song.isDownloaded ? song.localUrl : song.youtubeUrl,
-        title: song.title,
-        album: album,
-        artUri: song.thumbnailUrl != ""
-            ? song.thumbnailUrl
-            : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
-        displaySubtitle: song.title,
-        extras: {"youtubeUrl": song.youtubeUrl,"isDownloaded":false}));
-    await AudioService.playFromMediaId(song.youtubeUrl);
   }
 
   void setUrl(arguments) async {
@@ -85,8 +76,31 @@ class AudioFun extends BaseService {
         album: "hgh",
         artUri: arguments[2],
         displaySubtitle: oneSong.title,
-        extras: {"youtubeUrl": oneSong.youtubeUrl,"isDownloaded":oneSong.isDownloaded}));
+        extras: {
+          "youtubeUrl": oneSong.youtubeUrl,
+          "isDownloaded": oneSong.isDownloaded
+        }));
     await AudioService.skipToNext();
+  }
+
+  @override
+  playOneSong(Song song, String album) async {
+    if (!AudioService.running) {
+      await startAudioService();
+    }
+    await AudioService.addQueueItem(MediaItem(
+        id: song.isDownloaded ? song.localUrl : song.youtubeUrl,
+        title: song.title,
+        album: album,
+        artUri: song.thumbnailUrl != ""
+            ? song.thumbnailUrl
+            : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+        displaySubtitle: song.title,
+        extras: {
+          "youtubeUrl": song.youtubeUrl,
+          "isDownloaded": "${song.isDownloaded}"
+        }));
+    await AudioService.playFromMediaId(song.youtubeUrl);
   }
 
   @override
@@ -107,13 +121,33 @@ class AudioFun extends BaseService {
             artUri: f.thumbnailUrl != ""
                 ? f.thumbnailUrl
                 : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
-            extras: {"youtubeUrl": f.youtubeUrl}));
+            extras: {"youtubeUrl": f.youtubeUrl,"isDownloaded":"${f.isDownloaded}"}));
       });
       await AudioService.playFromMediaId(songs[0].youtubeUrl);
     }
   }
-  addToDownload(String youtubeUrl)async{
-    await platformMethodChannel.invokeMethod(
-        "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
+
+  addToDownload(String youtubeUrl) async {
+    if (!isInTheQueue(youtubeUrl)) {
+      downloadQueue.add({youtubeUrl.split("/watch?v=")[1]:true});
+      playerStates.triggerIsDownloading(downloadQueue);
+      await platformMethodChannel.invokeMethod(
+          "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
+  isInTheQueue(String youtubeUrl) {
+    downloadQueue.forEach((f) {
+      if (f.containsKey(youtubeUrl)) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    return false;
   }
 }

@@ -23,6 +23,7 @@ displayAddtoDialog(
                       future: DBProvider.db.getAllPlayList(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
+                          snapshot.data.removeAt(0);
                           return Expanded(
                               child: ListView.builder(
                                   padding: EdgeInsets.all(10),

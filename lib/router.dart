@@ -1,3 +1,4 @@
+import 'package:moojik/src/views/CurrentPlaylistView.dart';
 import 'package:moojik/src/views/PlayListDetailView.dart';
 import 'package:moojik/src/views/PlayerView.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case PlayerViewRoute:
       return MaterialPageRoute(
           builder: (context) => PlayerView());
+    case CurrentPlaylistRoute:
+      return MaterialPageRoute(
+          builder: (context) => CurrentPlaylistView());
     default:
       return MaterialPageRoute(builder: (context) => HomeView());
   }

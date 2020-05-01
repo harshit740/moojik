@@ -1,19 +1,20 @@
-import 'package:rxdart/rxdart.dart';
 import 'dart:async';
+
+import 'package:rxdart/rxdart.dart';
 
 class PlayerBlock {
   PlayerBlock() {
-    isYOutubeLenkGetting.listen((onData) {
+    _isDownloading.listen((onData) {
+      print("$onData");
     });
   }
 
-  final _isGettingYoutubeList = BehaviorSubject<bool>(); //searchterm StreamController
-  get triggerYoutubeLenkGetting =>
-      _isGettingYoutubeList.sink.add; //searchterm StreamController
-  Stream<bool> get isYOutubeLenkGetting => _isGettingYoutubeList.stream;
+  final _isDownloading = BehaviorSubject<List<Map<String,dynamic>>>(); //downloading StreamController
+  get triggerIsDownloading => _isDownloading.sink.add; //change state here
+  Stream<List<Map<String,dynamic>>> get isDownloading => _isDownloading.stream;
 
-  triggerYOutube(bool data) {
-    triggerYoutubeLenkGetting(data);
+  triggerDownload(List<Map<String,dynamic>> data) {
+    triggerIsDownloading(data);
   }
 }
 
