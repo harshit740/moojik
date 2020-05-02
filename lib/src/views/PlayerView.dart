@@ -58,12 +58,13 @@ class PlayerViewState extends State<PlayerView>
             playingFrom = mediaItem.album;
           });
           _myService.downloadQueue.forEach((f) {
-            if (f.containsKey(
-                AudioService.currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1])) {
-                setState(() {
-                  isDownloading = f[AudioService.currentMediaItem.extras['youtubeUrl']
-                      .split("/watch?v=")[1]];
-                });
+            if (f.containsKey(AudioService.currentMediaItem.extras['youtubeUrl']
+                .split("/watch?v=")[1])) {
+              setState(() {
+                isDownloading = f[AudioService
+                    .currentMediaItem.extras['youtubeUrl']
+                    .split("/watch?v=")[1]];
+              });
             }
           });
           if (mediaItem.extras != null &&
@@ -96,9 +97,7 @@ class PlayerViewState extends State<PlayerView>
               isDownloading = f[
                   currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1]];
             });
-          }
-        }
-        ;
+          }}
       });
     });
   }
@@ -154,37 +153,31 @@ class PlayerViewState extends State<PlayerView>
     var maxRedius;
     int virticalMarginBetweenControls;
     int bodyBottomPadding;
-    int iconSize;
     if (hightExludingAppbar > 660) {
       minRedius = 125;
       maxRedius = 150;
       bodyBottomPadding = 10;
       virticalMarginBetweenControls = 25;
-      iconSize = 60;
     } else if (hightExludingAppbar > 615 && width > 358) {
       minRedius = 115;
       maxRedius = 135;
       bodyBottomPadding = 10;
       virticalMarginBetweenControls = 10;
-      iconSize = 60;
     } else if (hightExludingAppbar > 630) {
       minRedius = 115;
       maxRedius = 132;
       bodyBottomPadding = 10;
       virticalMarginBetweenControls = 15;
-      iconSize = 60;
     } else if (hightExludingAppbar < 630) {
       minRedius = 100;
       maxRedius = 110;
       virticalMarginBetweenControls = 15;
       bodyBottomPadding = 5;
-      iconSize = 50;
     } else if (hightExludingAppbar < 598) {
       minRedius = 100;
       maxRedius = 110;
       virticalMarginBetweenControls = 0;
       bodyBottomPadding = 0;
-      iconSize = 40;
     }
     return Scaffold(
         backgroundColor: colors != null ? colors : Color(0xFF1B262C),
@@ -217,7 +210,6 @@ class PlayerViewState extends State<PlayerView>
                                   ScreenState(queue, mediaItem, playbackState)),
                           builder: (context, snapshot) {
                             final screenState = snapshot.data;
-                            final queue = screenState?.queue;
                             MediaItem mediaItem = screenState?.mediaItem;
                             final state = screenState?.playbackState;
                             final basicState =
@@ -248,9 +240,10 @@ class PlayerViewState extends State<PlayerView>
                                               alignment: Alignment.center,
                                               children: <Widget>[
                                                 CircleAvatar(
-                                                  radius: maxRedius+9.toDouble(),
+                                                  radius:
+                                                      maxRedius + 9.toDouble(),
                                                   backgroundColor: Colors.white,
-                                                  child:  getArt(mediaItem,
+                                                  child: getArt(mediaItem,
                                                       minRedius, maxRedius),
                                                 ),
                                               ],
@@ -367,7 +360,9 @@ class PlayerViewState extends State<PlayerView>
                                         IconButton(
                                             icon: Icon(Icons.featured_play_list,
                                                 color: Colors.white, size: 35),
-                                            onPressed: ()=> Navigator.pushNamed(context, CurrentPlaylistRoute)),
+                                            onPressed: () =>
+                                                Navigator.pushNamed(context,
+                                                    CurrentPlaylistRoute)),
                                         isDownloading
                                             ? CircularProgressIndicator()
                                             : mediaItem.extras[
@@ -615,8 +610,8 @@ class PlayerViewState extends State<PlayerView>
         ),
         backgroundColor: colors,
         foregroundColor: colors,
-        maxRadius: maxRedius.toDouble()+5,
-        minRadius: minRedius.toDouble()+5,
+        maxRadius: maxRedius.toDouble() + 5,
+        minRadius: minRedius.toDouble() + 5,
       );
     } else {
       return Image.network(
@@ -627,15 +622,10 @@ class PlayerViewState extends State<PlayerView>
   }
 
   isInLikedSong(String youtubeUrl) async {
-    if (await DBProvider.db.isLikedSOng(youtubeUrl)) {
-      setState(() {
-        isLikedSong = true;
+    if (mounted) {
+      setState(() async {
+        isLikedSong = DBProvider.db.isLikedSOng(youtubeUrl);
       });
-    } else {
-      if(mounted){
-      setState(() {
-        isLikedSong = false;
-      });}
     }
   }
 
@@ -658,7 +648,6 @@ class PlayerViewState extends State<PlayerView>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }
 

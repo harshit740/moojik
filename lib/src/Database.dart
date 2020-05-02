@@ -157,7 +157,6 @@ class DBProvider {
       var something = await db.rawUpdate(
         "Update Songs set isDownloaded = 0 where youtubeUrl = '$youtubeUrl';",
       );
-      print("Update SOmething $something");
       return something;
     } catch (e) {}
   }
@@ -186,13 +185,11 @@ class DBProvider {
       final db = await database;
       var songId = await getSongId(youtubeUrl);
       if (playListId == "All") {
-        var something = await db.delete("playlists_songs",
+        await db.delete("playlists_songs",
             where: "song_id= ?", whereArgs: [songId]);
-        var something2 =
-            await db.delete("songs", where: "songid=?", whereArgs: [songId]);
-        print("something  $something2");
+         await db.delete("songs", where: "songid=?", whereArgs: [songId]);
       } else {
-        var something = await db.delete("playlists_songs",
+        await db.delete("playlists_songs",
             where: "playlist_id = ? and song_id=?",
             whereArgs: [int.tryParse(playListId), songId]);
       }

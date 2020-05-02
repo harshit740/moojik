@@ -1,12 +1,10 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
 import 'package:moojik/src/services/audioService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert' as convert;
 class AudioFun extends BaseService {
   static const platformMethodChannel =
       const MethodChannel('com.moojikflux/music');

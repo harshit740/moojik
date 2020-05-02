@@ -29,9 +29,7 @@ class DownloadService : JobIntentService() {
         var JobId = 1001
         fun enQueueDownload(context: Context, intent: Intent) {
             val youtubeUrl = intent.getStringExtra("youtubeUrl")
-            Log.d("DownloadService", "DownloadService Started")
             if (downloadQueue.isNotEmpty()) {
-                Log.d("DownloadService", "DownloadService Started")
                 downloadQueue.forEach {
                     if (it.containsKey(youtubeUrl)) return
                 }
@@ -74,16 +72,13 @@ class DownloadService : JobIntentService() {
             builder.setOngoing(true)
             notify(2, builder.build())
         }
-        Log.d("OnHandelWork", "Intent ${intent.data}")
         val youtubeUrl = intent.getStringExtra("youtubeUrl")
-        Log.d("OnHandelWork", "youtubeUrl $youtubeUrl")
         val video = YoutubeDownloader().getVideo(youtubeUrl)
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setContentTitle(video.details().title())
             builder.setOngoing(true)
             notify(2, builder.build())
         }
-        suspend { }
         video.downloadAsync(video.audioFormats().run { this[this.size - 1] }, outDir, youtubeUrl, object : OnYoutubeDownloadListener {
             override fun onDownloading(progress: Int) {
                 downloadQueue.forEachIndexed { index, hashMap ->
@@ -101,10 +96,11 @@ class DownloadService : JobIntentService() {
 
             override fun onFinished(file: File) {
                 NotificationManagerCompat.from(applicationContext).apply {
-                    builder.setContentText("Saving...")
-                            .setProgress(100, 1000, true)
-                    builder.setOngoing(true)
+                    builder.setContentText("Download Complete")
+                    builder.setProgress(0, 0, false)
+                    builder.setOngoing(false)
                     notify(2, builder.build())
+                    builder.setAutoCancel(true)
                 }
                 updateDb(youtubeUrl, file.absolutePath, video.details().thumbnails().run { this[this.size - 1] }.toString())
             }
@@ -116,9 +112,7 @@ class DownloadService : JobIntentService() {
                     notify(2, builder.build())
                 }
             }
-
         })
-
     }
 
     fun updateDb(youtubeurl: String, localUrl: String, thumbnailUrl: String) {
@@ -128,13 +122,6 @@ class DownloadService : JobIntentService() {
         Handler(Looper.getMainLooper()).post {
             channel.invokeMethod("setDownloadComplete", list)
             MainActivity.updateDownloadStatus(list);
-        }
-        NotificationManagerCompat.from(applicationContext).apply {
-            builder.setContentText("DownloadComplete")
-            builder.setAutoCancel(true)
-            builder.setProgress(0, 0, false)
-            builder.setOngoing(false)
-            notify(2, builder.build())
         }
         val youtubeUrl = "/watch?v=$youtubeurl"
         moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)

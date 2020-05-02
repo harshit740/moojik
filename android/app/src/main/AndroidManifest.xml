@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.moojik.moojik">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -12,7 +13,8 @@
         android:name="io.flutter.app.FlutterApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="Moojik"
-        android:allowBackup="false">
+        android:allowBackup="false"
+        tools:targetApi="donut">
         <service
             android:name=".DownloadService"
             android:permission="android.permission.BIND_JOB_SERVICE"

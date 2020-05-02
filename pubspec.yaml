@@ -25,7 +25,7 @@ dependencies:
   path_provider: any
   just_audio: ^0.1.7
   audio_service:
-    path:   ../Libraries/audio_service-0.7.2
+    path:   ./Libraries/audio_service-0.7.2
   get_it: ^3.1.0
   palette_generator: ^0.2.2
   eva_icons_flutter: ^2.0.0
