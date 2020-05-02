@@ -3,7 +3,7 @@ class Song {
   final String desc;
   final String youtubeUrl;
   final String localUrl;
-  final bool isDownloaded;
+   bool isDownloaded;
   String thumbnailUrl;
   bool isFteched = false;
   String lastYoutubeLenk = '';

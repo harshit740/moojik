@@ -162,14 +162,14 @@ class PlayerViewState extends State<PlayerView>
       virticalMarginBetweenControls = 25;
       iconSize = 60;
     } else if (hightExludingAppbar > 615 && width > 358) {
-      minRedius = 110;
-      maxRedius = 130;
+      minRedius = 115;
+      maxRedius = 135;
       bodyBottomPadding = 10;
       virticalMarginBetweenControls = 10;
       iconSize = 60;
     } else if (hightExludingAppbar > 630) {
-      minRedius = 110;
-      maxRedius = 130;
+      minRedius = 115;
+      maxRedius = 132;
       bodyBottomPadding = 10;
       virticalMarginBetweenControls = 15;
       iconSize = 60;
@@ -244,8 +244,17 @@ class PlayerViewState extends State<PlayerView>
                                           }
                                         },
                                         child: AnimatedCrossFade(
-                                            firstChild: getArt(mediaItem,
-                                                minRedius, maxRedius),
+                                            firstChild: Stack(
+                                              alignment: Alignment.center,
+                                              children: <Widget>[
+                                                CircleAvatar(
+                                                  radius: maxRedius+9.toDouble(),
+                                                  backgroundColor: Colors.white,
+                                                  child:  getArt(mediaItem,
+                                                      minRedius, maxRedius),
+                                                ),
+                                              ],
+                                            ),
                                             firstCurve: Curves.easeInOutCubic,
                                             secondCurve: Curves.easeInOut,
                                             secondChild: CircleAvatar(
@@ -606,8 +615,8 @@ class PlayerViewState extends State<PlayerView>
         ),
         backgroundColor: colors,
         foregroundColor: colors,
-        maxRadius: maxRedius.toDouble(),
-        minRadius: minRedius.toDouble(),
+        maxRadius: maxRedius.toDouble()+5,
+        minRadius: minRedius.toDouble()+5,
       );
     } else {
       return Image.network(
@@ -643,7 +652,7 @@ class PlayerViewState extends State<PlayerView>
       isInLikedSong(AudioService.currentMediaItem.extras['youtubeUrl']);
     } else if (removeOrAdd == 0) {
       await DBProvider.db.removeSongFromPlaylist(
-          AudioService.currentMediaItem.extras['youtubeUrl'], 1);
+          AudioService.currentMediaItem.extras['youtubeUrl'], 1.toString());
       await isInLikedSong(AudioService.currentMediaItem.extras['youtubeUrl']);
     }
   }

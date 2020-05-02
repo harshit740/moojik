@@ -5,6 +5,7 @@ import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/UI/addSongtoPlaylist.dart';
 import 'package:moojik/src/UI/newPlaylistDialog.dart';
+import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/AudioFun.dart';
@@ -36,9 +37,9 @@ _navigateAndaddToPlayList(Song song, BuildContext context) async {
 
 class SongWidget extends StatefulWidget {
   final Song song;
-  final parentWIdgetname;
+  final parentWidgetName;
 
-  SongWidget({Key key, this.song, this.parentWIdgetname}) : super(key: key);
+  SongWidget({Key key, this.song, this.parentWidgetName}) : super(key: key);
 
   @override
   _SongWidgetState createState() => _SongWidgetState();
@@ -48,8 +49,38 @@ class _SongWidgetState extends State<SongWidget> {
   AudioFun _myService = locator<BaseService>();
 
   bool isAdding = false;
+  bool isDownloading = false;
 
-  addtoLikedSongs(song, context) {
+  @override
+  void initState() {
+    super.initState();
+    _myService.downloadQueue.forEach((f) {
+      if (f.containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
+        setState(() {
+          isDownloading = f[widget.song.youtubeUrl.split("?v=")[1]];
+        });
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    playerStates.isDownloading.listen((onData) {
+      onData.forEach((f) {
+        if (f.containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
+          setState(() {
+            isDownloading = f[widget.song.youtubeUrl.split("?v=")[1]];
+          });
+          if (!f[widget.song.youtubeUrl.split("?v=")[1]]) {
+            widget.song.isDownloaded = true;
+          }
+        }
+      });
+    });
+  }
+
+  addToLikedSongs(song, context) {
     DBProvider.db.addToLikedSongs(song, 1);
     final snackBar = SnackBar(content: Text('Added to Liked SOong'));
     Scaffold.of(context).showSnackBar(snackBar);
@@ -61,14 +92,17 @@ class _SongWidgetState extends State<SongWidget> {
         isAdding = true;
       });
       await DBProvider.db
-          .addYoutubePlaylistToDb(PlayList(song.youtubeUrl, song.title));
+          .addYoutubePlaylistToDb(PlayList(song.youtubeUrl, song.title.trim()));
       setState(() {
         isAdding = false;
       });
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(
-            SnackBar(content: Text("${song.title} is added to the Playlist",),duration: Duration(seconds: 2)));
+        ..showSnackBar(SnackBar(
+            content: Text(
+              "${song.title} is added to the Playlist",
+            ),
+            duration: Duration(seconds: 2)));
     } else {
       _navigateAndaddToPlayList(song, context);
     }
@@ -94,35 +128,38 @@ class _SongWidgetState extends State<SongWidget> {
   }
 
   getAddtoLikeIcon(song, context) {
-    if (this.widget.parentWIdgetname == 'Searched Songs') {
-      if(isAdding){
+    if (this.widget.parentWidgetName == 'Searched Songs' ||
+        widget.parentWidgetName.toString().split("&=")[1] == "All") {
+      if (isAdding) {
         return CircularProgressIndicator();
-      }
-     else if (!song.title.contains('- Channel')) {
+      } else if (!song.title.contains('- Channel')) {
         return GestureDetector(
             onTap: () => addToPlayList(song, context),
             child: Icon(Icons.library_add));
       } else {
-        return Icon(Icons.do_not_disturb);
+        return Divider();
       }
-    }else{
+    } else {
       return Divider();
     }
   }
 
   getDownloadIcon() {
-    if (widget.song.isDownloaded) {
-      return GestureDetector(child: Icon(Icons.remove_circle_outline));
+    if (!widget.song.isDownloaded) {
+      if (isDownloading) {
+        return CircularProgressIndicator();
+      } else
+        return GestureDetector(
+          child: Icon(
+            Icons.file_download,
+            size: 40,
+          ),
+          onTap: () async {
+            _myService.addToDownload(widget.song.youtubeUrl);
+          },
+        );
     } else {
-      return GestureDetector(
-        child: Icon(
-          Icons.file_download,
-          size: 40,
-        ),
-        onTap: () async {
-          _myService.addToDownload(widget.song.youtubeUrl);
-        },
-      );
+      return Divider();
     }
   }
 
@@ -134,9 +171,14 @@ class _SongWidgetState extends State<SongWidget> {
             onTap: () {
               if (widget.song.title.contains("- Playlist")) {
                 Navigator.pushNamed(context, PlayListDetailRoute,
-                    arguments: PlayList(widget.song.youtubeUrl, widget.song.title));
+                    arguments:
+                        PlayList(widget.song.youtubeUrl, widget.song.title));
               } else {
-                _myService.playOneSong(widget.song, widget.parentWIdgetname);
+                if(widget.parentWidgetName.toString().contains("&=1")){
+                _myService.playOneSong(widget.song, widget.parentWidgetName.toString().split("&=")[0]);
+                }else{
+                  _myService.playOneSong(widget.song, widget.parentWidgetName);
+                }
               }
             },
             child: Row(
@@ -148,7 +190,7 @@ class _SongWidgetState extends State<SongWidget> {
                       child: Text(
                         "${widget.song.title}",
                       )),
-                  widget.parentWIdgetname != "Searched Songs"
+                  widget.parentWidgetName != "Searched Songs"
                       ? getDownloadIcon()
                       : Divider(),
                   Column(

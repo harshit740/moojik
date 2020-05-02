@@ -15,7 +15,8 @@ class HomeView extends StatelessWidget {
           if (snapshot.hasData) {
             return GridView.count(
                 crossAxisCount: 3,
-                padding: EdgeInsets.all(5),
+                cacheExtent: 5,
+                padding: EdgeInsets.all(3),
                 children: List.generate(snapshot.data.length, (index) {
                   return InkWell(
                       onTap: () => Navigator.pushNamed(context,PlayListDetailRoute,arguments: snapshot.data[index]),
@@ -29,11 +30,12 @@ class HomeView extends StatelessWidget {
                         Icon(Icons.library_music),
                         Center(
                             child:  snapshot.data[index].title.split(" ").length > 1 && snapshot.data[index].title.split(" ").length <4 ?
-                            Column(
+                            Flex(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              children: getChildrenText(snapshot.data[index].title),
-                            ):Text(snapshot.data[index].title,style:TextStyle(fontSize: 17,),textAlign: TextAlign.center,overflow: TextOverflow.clip,))
+                              mainAxisSize: MainAxisSize.min,
+                              children: getChildrensText(snapshot.data[index].title), direction: Axis.vertical,
+                            ):Text(snapshot.data[index].title,style:TextStyle(fontSize: 17,),textAlign: TextAlign.center,maxLines: 4,overflow: TextOverflow.ellipsis,))
                       ],
                     )
                   ));
@@ -50,7 +52,7 @@ class HomeView extends StatelessWidget {
         });
   }
 
-  getChildrenText(String title) {
+  getChildrensText(String title) {
     List<Widget>  childrens  = [];
     if( title.split(" ").length >1 && title.split(" ").length <4){
     title.split(" ").forEach((f){

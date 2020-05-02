@@ -151,6 +151,17 @@ class DBProvider {
     }
   }
 
+  updateSongToDelted(String youtubeUrl) async {
+    try {
+      var db = await database;
+      var something = await db.rawUpdate(
+        "Update Songs set isDownloaded = 0 where youtubeUrl = '$youtubeUrl';",
+      );
+      print("Update SOmething $something");
+      return something;
+    } catch (e) {}
+  }
+
   addToPlayList(song, playlist) async {
     final db = await database;
     try {
@@ -164,17 +175,27 @@ class DBProvider {
 
   deletePlayList(playlistid) async {
     final db = await database;
+    await db.delete("playlists_songs",
+        where: "playlist_id = ?", whereArgs: [playlistid]);
     await db
         .delete("playlists", where: "playlistid = ?", whereArgs: [playlistid]);
   }
 
-  removeSongFromPlaylist(String youtubeUrl, int playListId) async {
+  removeSongFromPlaylist(String youtubeUrl, String playListId) async {
     try {
       final db = await database;
       var songId = await getSongId(youtubeUrl);
-      var something = await db.delete("playlists_songs",
-          where: "playlist_id = ? and song_id=?",
-          whereArgs: [playListId, songId]);
+      if (playListId == "All") {
+        var something = await db.delete("playlists_songs",
+            where: "song_id= ?", whereArgs: [songId]);
+        var something2 =
+            await db.delete("songs", where: "songid=?", whereArgs: [songId]);
+        print("something  $something2");
+      } else {
+        var something = await db.delete("playlists_songs",
+            where: "playlist_id = ? and song_id=?",
+            whereArgs: [int.tryParse(playListId), songId]);
+      }
     } catch (e) {
       print(e);
     }

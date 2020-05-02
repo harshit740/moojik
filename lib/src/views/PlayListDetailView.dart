@@ -74,6 +74,7 @@ class PlayListDetailView extends StatelessWidget {
                     this.songs = snapshot.data;
                     return Expanded(
                         child: SongList(
+                          playListItem:playlistItem,
                       playList: snapshot.data,
                     ));
                   } else if (snapshot.hasError == true) {
