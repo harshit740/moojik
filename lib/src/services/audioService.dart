@@ -325,7 +325,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   }
 
   getLyrics(String title)async {
-    var lyrics = await getSongLyrics(title.replaceAll(" - "," ").split("- Duration")[0]);
+    var lyrics = await getSongLyrics(title.replaceAll(" - "," ").split(" Duration")[0]);
     mediaItem.extras['lyrics'] = lyrics;
     AudioServiceBackground.setMediaItem(mediaItem);
   }

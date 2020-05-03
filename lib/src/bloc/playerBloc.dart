@@ -9,11 +9,11 @@ class PlayerBlock {
     });
   }
 
-  final _isDownloading = BehaviorSubject<List<Map<String,dynamic>>>(); //downloading StreamController
+  final _isDownloading = BehaviorSubject<Map<String,dynamic>>(); //downloading StreamController
   get triggerIsDownloading => _isDownloading.sink.add; //change state here
-  Stream<List<Map<String,dynamic>>> get isDownloading => _isDownloading.stream;
+  Stream<Map<String,dynamic>> get isDownloading => _isDownloading.stream;
 
-  triggerDownload(List<Map<String,dynamic>> data) {
+  triggerDownload(Map<String,dynamic> data) {
     triggerIsDownloading(data);
   }
 }

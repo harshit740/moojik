@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/services.dart';
+import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
@@ -9,7 +10,7 @@ class AudioFun extends BaseService {
   static const platformMethodChannel =
       const MethodChannel('com.moojikflux/music');
   Song oneSong;
-  List<Map<String, dynamic>> downloadQueue = [];
+  Map<String, dynamic> downloadQueue = <String, bool>{};
   List<Song> songQueue = [];
 
   AudioFun() {
@@ -49,9 +50,7 @@ class AudioFun extends BaseService {
         return new Future.value("");
         break;
        case "setDownloadComplete":
-         downloadQueue.forEach((f){
-           if(f.containsKey(call.arguments[0])) f[call.arguments[0]] = false;
-         });
+         if(downloadQueue.containsKey(call.arguments[0])) downloadQueue[call.arguments[0]] = false;
          AudioService.customAction("UpdateMediaItem",call.arguments);
          playerStates.triggerIsDownloading(downloadQueue);
          return new Future.value("");
@@ -85,6 +84,11 @@ class AudioFun extends BaseService {
   playOneSong(Song song, String album) async {
     if (!AudioService.running) {
       await startAudioService();
+    }
+    if(album == "Searched Songs"){
+      var values = await DBProvider.db.isInDownloadedSong(song.youtubeUrl);
+      song.isDownloaded = values[0];
+      values[0]?song.localUrl = values[1]:song.localUrl="";
     }
     await AudioService.addQueueItem(MediaItem(
         id: song.isDownloaded ? song.localUrl : song.youtubeUrl,
@@ -127,7 +131,7 @@ class AudioFun extends BaseService {
 
   addToDownload(String youtubeUrl) async {
     if (!isInTheQueue(youtubeUrl)) {
-      downloadQueue.add({youtubeUrl.split("/watch?v=")[1]:true});
+      downloadQueue[youtubeUrl.split("/watch?v=")[1]] =true;
       playerStates.triggerIsDownloading(downloadQueue);
       await platformMethodChannel.invokeMethod(
           "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
@@ -139,13 +143,10 @@ class AudioFun extends BaseService {
   }
 
   isInTheQueue(String youtubeUrl) {
-    downloadQueue.forEach((f) {
-      if (f.containsKey(youtubeUrl)) {
+      if (downloadQueue.containsKey(youtubeUrl)) {
         return true;
       } else {
         return false;
       }
-    });
-    return false;
   }
 }

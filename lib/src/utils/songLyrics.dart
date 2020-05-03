@@ -10,8 +10,7 @@ getSongLyrics(String name) async {
   name = name.replaceAll(RegExp("\\[Lyrics?]"), "");
   name = name.replaceAll(RegExp("\\(Official\\sMusic\\sVideo\\)"), "");
   name = name.replaceAll(RegExp("\\[HD\\s&\\sHQ]"), "");
-  name = name.split("(")[0];
-  print("query = $name lyrics");
+  name = name.split("(",)[0];
   var url = 'https://www.google.com/search?q=$name+ lyrics';
   Map<String, String> headers = {
     "user-agent":

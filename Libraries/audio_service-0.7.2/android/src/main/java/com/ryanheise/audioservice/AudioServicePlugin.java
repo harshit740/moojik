@@ -614,9 +614,7 @@ public class AudioServicePlugin implements FlutterPlugin, ActivityAware {
 			invokeMethod("onSetRating", rating2raw(rating), extras.getSerializable("extrasMap"));
 		}
 		private void getYoutubeLink(String url) {
-			Youthoob youthoob = new Youthoob(url,channel);
-			Thread  t = new Thread(youthoob);
-			t.start();
+			new Thread(new Youthoob(url,channel)).start();
 		}
 		@Override
 		public void onMethodCall(MethodCall call, Result result) {

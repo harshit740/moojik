@@ -127,7 +127,6 @@ class DownloadService : JobIntentService() {
         moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
         val query = "update songs set isDownloaded=1 ,localUrl='$localUrl' ,thumbnailUrl='$thumbnailUrl' where youtubeUrl = '$youtubeUrl'"
         moojikDatabase.execSQL(query)
-        moojikDatabase.close()
         downloadQueue.forEachIndexed { index, hashMap ->
             if (hashMap.containsKey(youtubeUrl)) {
                 downloadQueue[index][youtubeUrl] = false
@@ -137,6 +136,11 @@ class DownloadService : JobIntentService() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        moojikDatabase.close()
+        super.onDestroy()
     }
 
     private fun createNotificationChannel() {

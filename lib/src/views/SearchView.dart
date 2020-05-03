@@ -5,20 +5,6 @@ import 'package:moojik/src/UI/SongWidget.dart';
 import '../bloc/searchService.dart';
 
 class SearchView extends StatelessWidget {
-  // This widget is the root of your application.
-  /* Widget songList() {
-    return Container(
-        child: Column(children: <Widget>[
-      StreamBuilder(
-          stream: searchBlox.searchterm,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Text(snapshot.data);
-            }
-          })
-    ]));
-  }
-*/
 
   Widget searchIcon() {
     return StreamBuilder(
@@ -38,7 +24,8 @@ class SearchView extends StatelessWidget {
         maintainBottomViewPadding: true,
         child: Container(
             padding: EdgeInsets.all(1),
-            child: Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
+            child: Column(
+                mainAxisSize: MainAxisSize.max, children: <Widget>[
               TextField(
                 autofocus: true,
                 onChanged: searchBlox.changesearchTerm,

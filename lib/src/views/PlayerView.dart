@@ -57,16 +57,19 @@ class PlayerViewState extends State<PlayerView>
             currentMediaItem = AudioService.currentMediaItem;
             playingFrom = mediaItem.album;
           });
-          _myService.downloadQueue.forEach((f) {
-            if (f.containsKey(AudioService.currentMediaItem.extras['youtubeUrl']
-                .split("/watch?v=")[1])) {
-              setState(() {
-                isDownloading = f[AudioService
-                    .currentMediaItem.extras['youtubeUrl']
-                    .split("/watch?v=")[1]];
-              });
-            }
-          });
+          if (_myService.downloadQueue.containsKey(AudioService
+              .currentMediaItem.extras['youtubeUrl']
+              .split("/watch?v=")[1])) {
+            setState(() {
+              isDownloading = _myService.downloadQueue[AudioService
+                  .currentMediaItem.extras['youtubeUrl']
+                  .split("/watch?v=")[1]];
+            });
+          } else {
+            setState(() {
+              isDownloading = false;
+            });
+          }
           if (mediaItem.extras != null &&
               mediaItem.extras.containsKey('colors')) {
             colors = Color(int.parse(mediaItem.extras['colors']
@@ -89,16 +92,21 @@ class PlayerViewState extends State<PlayerView>
 
   initDownloaderStat() {
     playerStates.isDownloading.listen((onData) async {
-      onData.forEach((f) {
-        if (f.containsKey(
-            currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1])) {
-          if (mounted) {
-            setState(() {
-              isDownloading = f[
-                  currentMediaItem.extras['youtubeUrl'].split("/watch?v=")[1]];
-            });
-          }}
-      });
+      if (mounted) {
+        if (_myService.downloadQueue.containsKey(AudioService
+            .currentMediaItem.extras['youtubeUrl']
+            .split("/watch?v=")[1])) {
+          setState(() {
+            isDownloading = _myService.downloadQueue[AudioService
+                .currentMediaItem.extras['youtubeUrl']
+                .split("/watch?v=")[1]];
+          });
+        } else {
+          setState(() {
+            isDownloading = false;
+          });
+        }
+      }
     });
   }
 
@@ -340,7 +348,7 @@ class PlayerViewState extends State<PlayerView>
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: <Widget>[
-                                        isLikedSong
+                                        isLikedSong == true
                                             ? IconButton(
                                                 icon: Icon(
                                                   EvaIcons.heart,
@@ -624,7 +632,16 @@ class PlayerViewState extends State<PlayerView>
   isInLikedSong(String youtubeUrl) async {
     var val = await DBProvider.db.isLikedSOng(youtubeUrl);
     if (mounted) {
-      setState(()  {
+      setState(() {
+        isLikedSong = val;
+      });
+    }
+  }
+
+  isInDownloadSongs(String youtubeUrl) async {
+    var val = await DBProvider.db.isLikedSOng(youtubeUrl);
+    if (mounted) {
+      setState(() {
         isLikedSong = val;
       });
     }

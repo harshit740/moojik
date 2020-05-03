@@ -2,7 +2,7 @@ class Song {
   final String title;
   final String desc;
   final String youtubeUrl;
-  final String localUrl;
+   String localUrl;
    bool isDownloaded;
   String thumbnailUrl;
   bool isFteched = false;

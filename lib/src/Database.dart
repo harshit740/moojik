@@ -93,6 +93,25 @@ class DBProvider {
     }
   }
 
+  isInDownloadedSong(String youtubeUrl) async {
+    try {
+      final db = await database;
+      var isInDownloaded = await db.rawQuery(
+          "SELECT isDownloaded,localUrl FROM Songs WHERE youtubeUrl='$youtubeUrl'");
+      print("isInDownloadedSong $isInDownloaded");
+      List list;
+      if (isInDownloaded.isNotEmpty) {
+        list = [getBool(isInDownloaded.first['isDownloaded']),getBool(isInDownloaded.first['isDownloaded'])?isInDownloaded.first['localUrl']:youtubeUrl];
+        return list;
+      } else {
+        list = [false, youtubeUrl];
+        return list;
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<List<PlayList>> getAllPlayList() async {
     final db = await database;
     List<dynamic> res = await db.rawQuery('select * from playlists');

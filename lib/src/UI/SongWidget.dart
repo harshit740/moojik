@@ -54,30 +54,27 @@ class _SongWidgetState extends State<SongWidget> {
   @override
   void initState() {
     super.initState();
-    _myService.downloadQueue.forEach((f) {
-      if (f.containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
-        setState(() {
-          isDownloading = f[widget.song.youtubeUrl.split("?v=")[1]];
-        });
-      }
-    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if(widget.song.youtubeUrl.contains("?v=")){
     playerStates.isDownloading.listen((onData) {
-      onData.forEach((f) {
-        if (f.containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
+      if (mounted) {
+        if (_myService.downloadQueue
+            .containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
           setState(() {
-            isDownloading = f[widget.song.youtubeUrl.split("?v=")[1]];
+            isDownloading = _myService
+                .downloadQueue[widget.song.youtubeUrl.split("?v=")[1]];
           });
-          if (!f[widget.song.youtubeUrl.split("?v=")[1]]) {
+          if (!_myService
+              .downloadQueue[widget.song.youtubeUrl.split("?v=")[1]]) {
             widget.song.isDownloaded = true;
           }
         }
-      });
-    });
+      }
+    });}
   }
 
   addToLikedSongs(song, context) {
@@ -87,7 +84,8 @@ class _SongWidgetState extends State<SongWidget> {
   }
 
   addToPlayList(Song song, context) async {
-    if (song.title.contains("- Playlist")) {
+    if (song.title.contains("- Playlist") ||
+        widget.song.youtubeUrl.contains('&list=')) {
       setState(() {
         isAdding = true;
       });
@@ -114,7 +112,8 @@ class _SongWidgetState extends State<SongWidget> {
         padding: EdgeInsets.only(right: 10),
         child: Icon(Icons.account_circle),
       );
-    } else if (widget.song.title.contains('- Playlist')) {
+    } else if (widget.song.title.contains('- Playlist') ||
+        widget.song.youtubeUrl.contains('&list=')) {
       return Padding(
         padding: EdgeInsets.only(right: 10),
         child: Icon(Icons.playlist_play),
@@ -168,15 +167,17 @@ class _SongWidgetState extends State<SongWidget> {
     return Container(
         padding: EdgeInsets.all(15.0),
         child: InkWell(
+
             onTap: () {
               if (widget.song.title.contains("- Playlist")) {
                 Navigator.pushNamed(context, PlayListDetailRoute,
                     arguments:
                         PlayList(widget.song.youtubeUrl, widget.song.title));
               } else {
-                if(widget.parentWidgetName.toString().contains("&=1")){
-                _myService.playOneSong(widget.song, widget.parentWidgetName.toString().split("&=")[0]);
-                }else{
+                if (widget.parentWidgetName.toString().contains("&=1")) {
+                  _myService.playOneSong(widget.song,
+                      widget.parentWidgetName.toString().split("&=")[0]);
+                } else {
                   _myService.playOneSong(widget.song, widget.parentWidgetName);
                 }
               }
