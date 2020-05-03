@@ -41,7 +41,9 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
-
+    ndkVersion "21.0.6113669"
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.moojik.moojik"
         minSdkVersion 16
@@ -50,20 +52,20 @@ android {
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-   signingConfigs {
-       release {
-           keyAlias keystoreProperties['keyAlias']
-           keyPassword keystoreProperties['keyPassword']
-           storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-           storePassword keystoreProperties['storePassword']
-       }
-   }
-   buildTypes {
-       release {
-           signingConfig signingConfigs.release
-           shrinkResources false
-       }
-   }
+    signingConfigs {
+        release {
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword  System.getenv("KEY_PASS")
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : "../../key.jks"
+            storePassword System.getenv("STORE_PASS")
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            shrinkResources false
+        }
+    }
 
 
 }
