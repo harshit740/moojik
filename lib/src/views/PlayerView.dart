@@ -622,9 +622,10 @@ class PlayerViewState extends State<PlayerView>
   }
 
   isInLikedSong(String youtubeUrl) async {
+    var val = await DBProvider.db.isLikedSOng(youtubeUrl);
     if (mounted) {
-      setState(() async {
-        isLikedSong = DBProvider.db.isLikedSOng(youtubeUrl);
+      setState(()  {
+        isLikedSong = val;
       });
     }
   }
