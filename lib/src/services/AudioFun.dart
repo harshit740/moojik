@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
@@ -47,6 +48,11 @@ class AudioFun extends BaseService {
     switch (call.method) {
       case "setYoutubeLenk":
         setUrl(call.arguments);
+        return new Future.value("");
+        break;
+      case "setDownloadStatus":
+        downloadQueue[call.arguments]=true;
+        playerStates.triggerIsDownloading(downloadQueue);
         return new Future.value("");
         break;
        case "setDownloadComplete":

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -613,7 +614,7 @@ class PlayerViewState extends State<PlayerView>
   getArt(MediaItem mediaItem, int minRedius, int maxRedius) {
     if (mediaItem != null && mediaItem.artUri != null) {
       return CircleAvatar(
-        backgroundImage: NetworkImage(
+        backgroundImage: CachedNetworkImageProvider(
           mediaItem.artUri,
         ),
         backgroundColor: colors,

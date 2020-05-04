@@ -19,12 +19,14 @@ class MainActivity : FlutterActivity() {
         const val CHANNEL = "com.moojikflux/music"
         lateinit var flutterEngineInstance: FlutterEngine;
         lateinit var channel: MethodChannel
-        fun updateDownloadStatus(list:ArrayList<String>){
+        fun updateDownloadComplete(list:ArrayList<String>){
             Handler(Looper.getMainLooper()).post {
                 channel.invokeMethod("setDownloadComplete", list)
             }
         }
-        
+        fun updateDownloadProgress(youtubeUrl:String){
+                channel.invokeMethod("setDownloadStatus", youtubeUrl)
+        }
     }
     /** This is a temporary workaround to avoid a memory leak in the Flutter framework  */
     override fun provideFlutterEngine(context: Context): FlutterEngine? { // Instantiate a FlutterEngine.

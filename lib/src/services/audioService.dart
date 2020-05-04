@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:moojik/src/utils/songLyrics.dart';
@@ -45,12 +46,11 @@ class MyBackgroundTask extends BackgroundAudioTask {
   Completer _completer = Completer();
   BasicPlaybackState _skipState;
   bool _playing;
-  String _isFetchingYoutube;
 
   bool get hasNext => _queueIndex + 1 < _queue.length;
 
   bool get hasPrevious => _queueIndex > 0;
-  bool firsttime;
+  bool firstTime;
 
   MediaItem get mediaItem => _queue[_queueIndex];
   int offset;
@@ -79,7 +79,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   Future<void> onStart() async {
-    firsttime = true;
+    firstTime = true;
     var playerStateSubscription = _audioPlayer.playbackStateStream
         .where((state) => state == AudioPlaybackState.completed)
         .listen((state) {
@@ -133,8 +133,8 @@ class MyBackgroundTask extends BackgroundAudioTask {
   Future<void> _skip(int offset) async {
     final newPos = _queueIndex + offset;
     if (!(newPos >= 0 && newPos < _queue.length)) {
-      if (firsttime) {
-        firsttime = false;
+      if (firstTime) {
+        firstTime = false;
         return;
       } else if (_queue.isNotEmpty) {
         if (offset == -1) {
@@ -185,12 +185,10 @@ class MyBackgroundTask extends BackgroundAudioTask {
           setSkipState();
           return await _updatePaletteGenerator();
         } else {
-          _isFetchingYoutube = mediaItem.id;
           AudioServiceBackground.getYoutubeLink(
               mediaItem.id.split("/watch?v=")[1]);
         }
       } else {
-        _isFetchingYoutube = mediaItem.id;
         AudioServiceBackground.getYoutubeLink(
             mediaItem.id.split("/watch?v=")[1]);
       }
@@ -199,6 +197,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void onCustomAction(String name, arguments) {
+    super.onCustomAction(name, arguments);
     switch (name) {
       case "clearQueue":
         _queue.clear();
@@ -212,16 +211,17 @@ class MyBackgroundTask extends BackgroundAudioTask {
           currentItem.id = arguments[1];
           currentItem.extras['isDownloaded'] = true;
           _mediaItems["/watch?v=${arguments[0]}"] = currentItem;
-          if(mediaItem.extras["youtubeUrl"] == "/watch?v=${arguments[0]}"){
+          if (mediaItem.extras["youtubeUrl"] == "/watch?v=${arguments[0]}") {
             AudioServiceBackground.setMediaItem(currentItem);
           }
           int index = _queue.indexWhere((MediaItem test) {
-            return test.extras['youtubeUrl'] == "/watch?v=${arguments[0]}" ? true : false;
+            return test.extras['youtubeUrl'] == "/watch?v=${arguments[0]}"
+                ? true
+                : false;
           });
           if (index >= 0) _queue[index] = currentItem;
         }
     }
-    super.onCustomAction(name, arguments);
   }
 
   void setSkipState() {
@@ -303,7 +303,8 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void setYotutubeLink(List details) async {
-    if (_isFetchingYoutube == mediaItem.extras['youtubeUrl']) {
+    if (details[2] ==
+        mediaItem.extras['youtubeUrl'].toString().split("?v=")[1]) {
       mediaItem.artUri = details[1];
       mediaItem.id = details[0];
       var duration = await _audioPlayer.setUrl(mediaItem.id);
@@ -315,7 +316,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
           [details[0], details[1], DateTime.now().toString()]);
     } else {
       _queue.forEach((f) {
-        if (f.extras['youtubeUrl'] == details[2]) {
+        if (f.extras['youtubeUrl'].split("?v=")[1] == details[2]) {
           f.id = details[0];
           f.artUri = details[1];
         }
@@ -324,8 +325,9 @@ class MyBackgroundTask extends BackgroundAudioTask {
     return await _updatePaletteGenerator();
   }
 
-  getLyrics(String title)async {
-    var lyrics = await getSongLyrics(title.replaceAll(" - "," ").split(" Duration")[0]);
+  getLyrics(String title) async {
+    var lyrics =
+        await getSongLyrics(title.replaceAll(" - ", " ").split(" Duration")[0]);
     mediaItem.extras['lyrics'] = lyrics;
     AudioServiceBackground.setMediaItem(mediaItem);
   }
@@ -334,8 +336,10 @@ class MyBackgroundTask extends BackgroundAudioTask {
     if (mediaItem.artUri != null &&
         mediaItem.artUri != "" &&
         !mediaItem.extras.containsKey('colors')) {
-      paletteGenerator = await PaletteGenerator.fromImageProvider(NetworkImage(mediaItem.artUri),
-          maximumColorCount: 9, timeout: Duration(seconds: 50));
+      paletteGenerator = await PaletteGenerator.fromImageProvider(
+          CachedNetworkImageProvider(mediaItem.artUri),
+          maximumColorCount: 9,
+          timeout: Duration(seconds: 50));
       if (paletteGenerator.darkMutedColor != null) {
         colors = paletteGenerator.darkMutedColor.color;
       } else if (paletteGenerator.darkVibrantColor != null) {

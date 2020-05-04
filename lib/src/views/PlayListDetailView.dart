@@ -20,49 +20,53 @@ class PlayListDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
+      backgroundColor: Color(0xFF000B1C),
+        appBar: AppBar(
+          title: Title(child: Text(playlistItem.title,style: TextStyle(fontSize: 30),), color: Colors.white,),
+          centerTitle: true,
+          elevation: 0,
+          bottom: PreferredSize(
+    preferredSize: const Size.fromHeight(48.0),
+    child: Theme(
+    data: Theme.of(context).copyWith(accentColor: Colors.white),
+    child:            Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            ButtonTheme(
+              minWidth: MediaQuery.of(context).size.width / 3,
+              height: 50.0,
+              child: RaisedButton(
+                onPressed: () => _myService.playtheList(
+                    songs, playlistItem.title, false),
+                child: Text("Play"),
+                textColor: Colors.white,
+                colorBrightness: Brightness.dark,
+                elevation: 120,
+                padding: EdgeInsets.only(left: 10, right: 10),
+                textTheme: ButtonTextTheme.accent,
+              ),
+            ),
+            ButtonTheme(
+                minWidth: 200,
+                height: 50.0,
+                child: RaisedButton(
+                  onPressed: () => _myService.playtheList(
+                      songs, playlistItem.title, true),
+                  child: Text("ShuffelPlay"),
+                  textColor: Colors.white,
+                  colorBrightness: Brightness.dark,
+                  elevation: 120,
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  textTheme: ButtonTextTheme.accent,
+                ))
+          ],
+        )))),
+          backgroundColor: Color(0xFF01183D),
+        ),
         body: Container(
             child: Column(
           children: <Widget>[
-            Center(
-              child: Text(
-                playlistItem.title,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Center(
-                child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                ButtonTheme(
-                  minWidth: MediaQuery.of(context).size.width / 3,
-                  height: 50.0,
-                  child: RaisedButton(
-                    onPressed: () => _myService.playtheList(
-                        songs, playlistItem.title, false),
-                    child: Text("Play"),
-                    textColor: Colors.white,
-                    colorBrightness: Brightness.dark,
-                    elevation: 120,
-                    padding: EdgeInsets.only(left: 10, right: 10),
-                    textTheme: ButtonTextTheme.accent,
-                  ),
-                ),
-                ButtonTheme(
-                    minWidth: 200,
-                    height: 50.0,
-                    child: RaisedButton(
-                      onPressed: () => _myService.playtheList(
-                          songs, playlistItem.title, true),
-                      child: Text("ShuffelPlay"),
-                      textColor: Colors.white,
-                      colorBrightness: Brightness.dark,
-                      elevation: 120,
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      textTheme: ButtonTextTheme.accent,
-                    ))
-              ],
-            )),
             FutureBuilder<List<Song>>(
                 future: playlistItem.playlistid.contains("list=")
                     ? getYoutubePlaylist(playlistItem.playlistid)

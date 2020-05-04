@@ -30,6 +30,7 @@ dependencies:
   palette_generator: ^0.2.2
   eva_icons_flutter: ^2.0.0
   flutter_svg: ^0.17.4
+  cached_network_image: ^2.2.0
   shared_preferences:
 
   # The following adds the Cupertino Icons font to your application.

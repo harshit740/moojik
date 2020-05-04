@@ -20,30 +20,37 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      key: UniqueKey(),
       title: 'Moojikflux',
       onGenerateRoute: router.generateRoute,
       initialRoute: HomeViewRoute,
       theme: ThemeData(
-        fontFamily: 'Gilroy',
-        brightness: Brightness.dark,
-        primaryColorDark: Color(0xFF1B262C),
-        backgroundColor: Color(0xFF1B262C),
-        scaffoldBackgroundColor: Color(0xFF1B262C),
-        bottomAppBarColor: Color(0xFF1B262C),
-      ),
+          fontFamily: 'Gilroy',
+          brightness: Brightness.dark,
+          primaryColorDark: Color(0xFF000B1C),
+          backgroundColor: Color(0xFF000B1C),
+          scaffoldBackgroundColor: Color(0xFF000B1C),
+          bottomAppBarColor: Color(0xFF000B1C),
+          textTheme: Theme.of(context).textTheme.apply(
+              bodyColor: Color(0xfff2f2f2),
+              displayColor: Color(0xfff2f2f2),
+              fontFamily: 'Gilroy')),
       darkTheme: ThemeData(
         fontFamily: 'Gilroy',
         brightness: Brightness.dark,
-        primaryColorDark: Color(0xFF1B262C),
-        primaryColor: Color(0xFF1B262C),
-        backgroundColor: Color(0xFF1B262C),
-        highlightColor: Color(0xFF1B262C),
-        bottomAppBarColor: Color(0xFF1B262C),
-        scaffoldBackgroundColor: Color(0xFF1B262C),
+        primaryColorDark: Color(0xFF000B1C),
+        primaryColor: Color(0xFF000B1C),
+        backgroundColor: Color(0xFF000B1C),
+        bottomAppBarColor: Color(0xFF000B1C),
+        scaffoldBackgroundColor: Color(0xFF000B1C),
+        textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: Color(0xfff2f2f2),
+            displayColor: Color(0xfff2f2f2),
+            fontFamily: 'Gilroy'),
         primarySwatch: MaterialColor(4280361249, {
-          50: Color(0xFF1B262C),
-          100: Color(0xFF1B262C),
-          200: Color(0xFF1B262C)
+          50: Color(0xFF000B1C),
+          100: Color(0xFF000B1C),
+          200: Color(0xFF000B1C),
         }),
       ),
       home: AudioServiceWidget(
@@ -56,6 +63,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -68,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage>
   bool isStarted = false;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+
   void _onItemTapped(int index) async {
     _tabController.animateTo(index);
     setState(() {
@@ -90,6 +99,7 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   onChange() {}
+
   @override
   void initState() {
     super.initState();
@@ -127,6 +137,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
     this.initControlers();
   }
+
 // within your initState() method
 
   void _setActiveTabIndex() {
@@ -149,12 +160,23 @@ class _MyHomePageState extends State<MyHomePage>
         initialIndex: 0,
         child: Scaffold(
           resizeToAvoidBottomPadding: false,
-          appBar:AppBar(
+          appBar: AppBar(
             elevation: 0,
-            backgroundColor: Color(0xff000000),
+            backgroundColor: Color(0xFF01183D),
+            centerTitle: true,
             // Here we take the value from the MyHomePage object that was created by
             // the App.build method, and use it to set our appbar title.
-            title: Text(widget.title),
+            titleSpacing: 5,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Title(child: Text("MoojikFlux"),color: Colors.white,),
+                Text("              "),
+                Title(child: Text("Home"),color: Colors.white,),
+            ],),
+              actions: <Widget>[CircleAvatar(),],
           ),
           body: Column(
             children: <Widget>[
@@ -168,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage>
                   ],
                 ),
               ),
-              Row(
+              Container(child: Row(
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -177,8 +199,8 @@ class _MyHomePageState extends State<MyHomePage>
                     if (isStarted) ...[
                       CircleAvatar(
                           backgroundImage: NetworkImage(
-                        AudioService.currentMediaItem.artUri,
-                      )),
+                            AudioService.currentMediaItem.artUri,
+                          )),
                       Container(
                         width: MediaQuery.of(context).size.width / 1.5,
                         child: SingleChildScrollView(
@@ -212,7 +234,7 @@ class _MyHomePageState extends State<MyHomePage>
                               color: Colors.white,
                             ))
                       ] else if (AudioService.playbackState != null &&
-                              isPlaying ||
+                          isPlaying ||
                           AudioService.playbackState.basicState ==
                               BasicPlaybackState.playing) ...[
                         IconButton(
@@ -235,12 +257,12 @@ class _MyHomePageState extends State<MyHomePage>
                     ]
                   ]
                 ],
-              )
+              ),)
               //_widgetOptions.elementAt(_selectedIndex),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Color(0xff000000),
+            backgroundColor: Color(0xFF01183D),
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(
@@ -265,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ],
             currentIndex: _selectedIndex,
-            selectedItemColor: Colors.green,
+            selectedItemColor: Colors.grey,
             onTap: _onItemTapped,
           ),
         ));

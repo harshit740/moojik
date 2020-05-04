@@ -169,7 +169,8 @@ class _SongWidgetState extends State<SongWidget> {
         child: InkWell(
 
             onTap: () {
-              if (widget.song.title.contains("- Playlist")) {
+              if (widget.song.title.contains("- Playlist")||
+                  widget.song.youtubeUrl.contains('&list=')) {
                 Navigator.pushNamed(context, PlayListDetailRoute,
                     arguments:
                         PlayList(widget.song.youtubeUrl, widget.song.title));

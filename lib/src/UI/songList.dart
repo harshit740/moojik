@@ -18,20 +18,15 @@ class SongList extends StatefulWidget {
   @override
   _SongListState createState() => _SongListState();
 }
-
 class _SongListState extends State<SongList> {
   var currentIndex;
-
   var currentSong;
-
   bool isDeleteFromFile = false;
-
   BuildContext context;
 
   @override
   Widget build(BuildContext context) {
     this.context = context;
-    debugPrint("PlayListCurent vidsfsd ${widget.playList.isEmpty}");
     return StreamBuilder<List<MediaItem>>(
         stream: widget.playList.isEmpty ? AudioService.queueStream : null,
         builder: (context, snapshot) {
@@ -110,7 +105,7 @@ class _SongListState extends State<SongList> {
                   );
                 });
           } else if (snapshot.hasData) {
-            debugPrint("called ${snapshot.data} ${AudioService.queue}");
+            debugPrint("called  ${AudioService.browseMediaChildren}");
             return ListView.builder(
                 itemCount: snapshot.data.length,
                 shrinkWrap: true,
