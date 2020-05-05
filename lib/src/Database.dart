@@ -29,7 +29,7 @@ class DBProvider {
     return await openDatabase(path, version: 1, onOpen: (db) {},
         onCreate: (Database db, int version) async {
       await db.execute(
-          "CREATE TABLE songs (songid INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT,desc TEXT,youtubeUrl TEXT UNIQUE,localUrl TEXT,isDownloaded boolean,thumbnailUrl TEXT)");
+          "CREATE TABLE songs (songid INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT,desc TEXT,youtubeUrl TEXT UNIQUE,localUrl TEXT,isDownloaded boolean,thumbnailUrl TEXT,lastPlayedOn DATETIME)");
       await db.execute(
           "CREATE TABLE playlists (playlistid INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT)");
       await db.execute(
@@ -101,7 +101,12 @@ class DBProvider {
       print("isInDownloadedSong $isInDownloaded");
       List list;
       if (isInDownloaded.isNotEmpty) {
-        list = [getBool(isInDownloaded.first['isDownloaded']),getBool(isInDownloaded.first['isDownloaded'])?isInDownloaded.first['localUrl']:youtubeUrl];
+        list = [
+          getBool(isInDownloaded.first['isDownloaded']),
+          getBool(isInDownloaded.first['isDownloaded'])
+              ? isInDownloaded.first['localUrl']
+              : youtubeUrl
+        ];
         return list;
       } else {
         list = [false, youtubeUrl];
@@ -206,7 +211,7 @@ class DBProvider {
       if (playListId == "All") {
         await db.delete("playlists_songs",
             where: "song_id= ?", whereArgs: [songId]);
-         await db.delete("songs", where: "songid=?", whereArgs: [songId]);
+        await db.delete("songs", where: "songid=?", whereArgs: [songId]);
       } else {
         await db.delete("playlists_songs",
             where: "playlist_id = ? and song_id=?",
@@ -225,6 +230,32 @@ class DBProvider {
     });
     playListBloc.gettAllPlaylistStream();
     return res;
+  }
+
+  updateLastPlayed(String youtubeUrl) async {
+    final db = await database;
+    try {
+      db.rawUpdate(
+          "update songs set lastPlayedOn =  datetime('now') where youtubeUrl = '$youtubeUrl'");
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<Song>> getLastPlayed() async {
+    final db = await database;
+    try {
+      var res = await db.rawQuery(
+          "select * from songs where lastPlayedOn is not null  ORDER BY  lastPlayedOn DESC LIMIT 50");
+      List<Song> sungs = [];
+      res.forEach((f) {
+        sungs.add(Song(f['title'], f['desc'], f['youtubeUrl'], f['localUrl'],
+            getBool(f['isDownloaded']), f['thumbnailUrl']));
+      });
+      return sungs;
+    } catch (e) {
+      print(e);
+    }
   }
 
   //UtilFunction

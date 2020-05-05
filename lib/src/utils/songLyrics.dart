@@ -4,13 +4,15 @@ import 'package:html/dom.dart' as dom;
 
 getSongLyrics(String name) async {
   name = name.toLowerCase();
-  name = name.replaceAll(RegExp("\\(([Oo]]fficial)?\\s([Mm]usic)?\\s([Vv]ideo)?\\s\\)"), "");
+  name = name.replaceAll("official", "").replaceAll("music", "").replaceAll("video", "").replaceAll("new", "").replaceAll("song", "");
   name = name.replaceAll(RegExp("\\(\\[?[Ll]yrics?\\)]?\\s?([Vv]ideo)?\\)?"), "");
   name = name.replaceAll(RegExp("\\(?[aA]udio\\)?\\s"), "");
   name = name.replaceAll(RegExp("\\[Lyrics?]"), "");
   name = name.replaceAll(RegExp("\\(Official\\sMusic\\sVideo\\)"), "");
   name = name.replaceAll(RegExp("\\[HD\\s&\\sHQ]"), "");
+  name = name.replaceAll("|", " ");
   name = name.split("(",)[0];
+  print("Query =$name");
   var url = 'https://www.google.com/search?q=$name+ lyrics';
   Map<String, String> headers = {
     "user-agent":

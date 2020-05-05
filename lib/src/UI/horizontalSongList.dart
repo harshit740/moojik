@@ -9,23 +9,56 @@ import 'package:moojik/src/services/BaseService.dart';
 
 class HorizontalSongList extends StatelessWidget {
   final List<Song> songs;
+  final parentWidgetName;
   final AudioFun _myService = locator<BaseService>();
-  HorizontalSongList({Key key, this.songs}) : super(key: key);
+
+  HorizontalSongList({Key key, this.songs, this.parentWidgetName})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemBuilder: (context, index) {
-          return InkWell(
-            onTap: ()=>_myService.playOneSong(songs[index], "PlayList"),
-            child: CircleAvatar(radius: 70,child: CircleAvatar(
-              radius: 70,
-              backgroundImage: CachedNetworkImageProvider(
-                  songs[index].thumbnailUrl),),
-          ));
-        },
-        scrollDirection: Axis.horizontal,
-    );
+    return songs.length > 0
+        ? ListView.builder(
+            shrinkWrap: true,
+            itemCount: songs.length,
+            itemBuilder: (context, index) {
+              return Column(children: <Widget>[
+                InkWell(
+                    splashColor: Colors.white,
+                    onTap: () =>
+                        _myService.playOneSong(songs[index], parentWidgetName),
+                    child: CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        radius: 70,
+                        child: songs[index].thumbnailUrl != null
+                            ? CircleAvatar(
+                          radius: 70,
+                          backgroundColor: Colors.transparent,
+                          child: Icon(
+                            Icons.audiotrack,
+                            color: Colors.white,
+                            size: 50,
+                          ),
+                          backgroundImage: CachedNetworkImageProvider(
+                              songs[index].thumbnailUrl),
+                        )
+                            : Icon(
+                          Icons.audiotrack,
+                          color: Colors.white,
+                          size: 50,
+                        ))),
+                Container(child: Text(songs[index].title,maxLines: 3),width: 110,)
+              ],);
+            },
+            scrollDirection: Axis.horizontal,
+          )
+        : Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[Icon(Icons.hourglass_empty), Text("Empety")],
+            ),
+          );
   }
 }
 

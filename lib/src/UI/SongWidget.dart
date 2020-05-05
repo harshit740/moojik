@@ -190,7 +190,7 @@ class _SongWidgetState extends State<SongWidget> {
                   Flexible(
                       fit: FlexFit.tight,
                       child: Text(
-                        "${widget.song.title}",
+                        "${widget.song.title}",style: TextStyle(fontSize: 18),maxLines: 2,
                       )),
                   widget.parentWidgetName != "Searched Songs"
                       ? getDownloadIcon()

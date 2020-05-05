@@ -6,6 +6,7 @@ class Song {
    bool isDownloaded;
   String thumbnailUrl;
   bool isFteched = false;
+  String LastPlayed = "";
   String lastYoutubeLenk = '';
   String lastFetchedOn = "";
   bool isFetching = false;

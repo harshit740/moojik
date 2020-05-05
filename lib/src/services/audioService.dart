@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/utils/songLyrics.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -171,6 +172,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       mediaItem.duration = duration.inMilliseconds;
       AudioServiceBackground.setMediaItem(mediaItem);
       setSkipState();
+      await DBProvider.db.updateLastPlayed(mediaItem.extras['youtubeUrl']);
       return await _updatePaletteGenerator();
     } else {
       final prefs = await SharedPreferences.getInstance();
@@ -183,6 +185,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
           mediaItem.duration = duration.inMilliseconds;
           AudioServiceBackground.setMediaItem(mediaItem);
           setSkipState();
+          await DBProvider.db.updateLastPlayed(mediaItem.extras['youtubeUrl']);
           return await _updatePaletteGenerator();
         } else {
           AudioServiceBackground.getYoutubeLink(
@@ -311,6 +314,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       mediaItem.duration = duration.inMilliseconds;
       AudioServiceBackground.setMediaItem(mediaItem);
       setSkipState();
+      await DBProvider.db.updateLastPlayed(mediaItem.extras['youtubeUrl']);
       final prefs = await SharedPreferences.getInstance();
       prefs.setStringList(mediaItem.extras['youtubeUrl'],
           [details[0], details[1], DateTime.now().toString()]);

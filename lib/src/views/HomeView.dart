@@ -4,15 +4,16 @@ import 'package:flutter/rendering.dart';
 import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/UI/horizontalSongList.dart';
 import 'package:moojik/src/bloc/PlaylistBloc.dart';
+import 'package:moojik/src/bloc/trendingSongsBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
-
 import '../../routing_constants.dart';
 
 class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Container(
+        child: ListView(
       shrinkWrap: true,
       children: [
         Text(
@@ -25,16 +26,18 @@ class HomeView extends StatelessWidget {
         Container(
             height: 200,
             child: FutureBuilder<List<Song>>(
-                future: DBProvider.db.getAllSongs(),
+                future: DBProvider.db.getLastPlayed(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData == true) {
-                    return HorizontalSongList(songs: snapshot.data);
+                    return HorizontalSongList(songs: snapshot.data,parentWidgetName: "RecentlyPlayer",);
                   } else {
-                    return CircularProgressIndicator();
+                    return  Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }
                 })),
         Text(
-          "Recentaly Played",
+          "Trending Today",
           style: TextStyle(
             fontSize: 25,
           ),
@@ -42,102 +45,95 @@ class HomeView extends StatelessWidget {
         ),
         Container(
             height: 200,
-            child: FutureBuilder<List<Song>>(
-                future: DBProvider.db.getAllSongs(),
+            child: StreamBuilder<List<Song>>(
+                stream: trendingBloc.getTrendingSongs,
                 builder: (context, snapshot) {
                   if (snapshot.hasData == true) {
-                    return HorizontalSongList(songs: snapshot.data);
+                    return HorizontalSongList(songs: snapshot.data,parentWidgetName: "TrendingSongs",);
                   } else {
-                    return CircularProgressIndicator();
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }
                 })),
         Text(
-          "Recentaly Played",
+          "Your Playlists",
           style: TextStyle(
             fontSize: 25,
           ),
           textAlign: TextAlign.center,
         ),
-        Container(
-            height: 200,
-            child: FutureBuilder<List<Song>>(
-                future: DBProvider.db.getAllSongs(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData == true) {
-                    return HorizontalSongList(songs: snapshot.data);
-                  } else {
-                    return CircularProgressIndicator();
-                  }
-                })),
-        Container(
-            height: 200,
-            child: StreamBuilder<List<PlayList>>(
-                stream: playListBloc.playListsStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return GridView.count(
-                      crossAxisCount: 3,
-                      cacheExtent: 5,
-                      padding: EdgeInsets.all(3),
-                      children: List.generate(snapshot.data.length, (index) {
-                        return InkWell(
-                            splashColor: Colors.white,
-                            onTap: () => Navigator.pushNamed(
-                                context, PlayListDetailRoute,
-                                arguments: snapshot.data[index]),
-                            child: Card(
-                                color: Color(0xFF01183D),
-                                elevation: 8.0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Stack(
-                                  children: <Widget>[
-                                    Icon(Icons.library_music),
-                                    Center(
-                                        child: snapshot.data[index].title
-                                                        .split(" ")
-                                                        .length >
-                                                    1 &&
-                                                snapshot.data[index].title
-                                                        .split(" ")
-                                                        .length <
-                                                    4
-                                            ? Flex(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: getChildrensText(
-                                                    snapshot.data[index].title),
-                                                direction: Axis.vertical,
-                                              )
-                                            : Text(
-                                                snapshot.data[index].title,
-                                                style: TextStyle(
-                                                  fontSize: 17,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                                maxLines: 4,
-                                                overflow: TextOverflow.ellipsis,
-                                              ))
-                                  ],
-                                )));
-                      }),
-                    );
-                  } else if (snapshot.hasError == true) {
-                    return Center(
-                      child: Icon(Icons.error_outline),
-                    );
-                  } else {
-                    return Center(
-                      child: Icon(Icons.error),
-                    );
-                  }
-                }))
+        StreamBuilder<List<PlayList>>(
+            stream: playListBloc.playListsStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return GridView.count(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  physics: ScrollPhysics(),
+                  // to disable GridView's scrolling
+                  crossAxisCount: 3,
+                  cacheExtent: 5,
+                  padding: EdgeInsets.all(3),
+                  children: List.generate(snapshot.data.length, (index) {
+                    return InkWell(
+                        splashColor: Colors.white,
+                        onTap: () => Navigator.pushNamed(
+                            context, PlayListDetailRoute,
+                            arguments: snapshot.data[index]),
+                        child: Card(
+                            color: Color(0xFF01183D),
+                            elevation: 8.0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Stack(
+                              children: <Widget>[
+                                Icon(Icons.library_music),
+                                Center(
+                                    child: snapshot.data[index].title
+                                                    .split(" ")
+                                                    .length >
+                                                1 &&
+                                            snapshot.data[index].title
+                                                    .split(" ")
+                                                    .length <
+                                                4
+                                        ? Flex(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: getChildrensText(
+                                                snapshot.data[index].title),
+                                            direction: Axis.vertical,
+                                          )
+                                        : Text(
+                                            snapshot.data[index].title,
+                                            style: TextStyle(
+                                              fontSize: 17,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 4,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))
+                              ],
+                            )));
+                  }),
+                );
+              } else if (snapshot.hasError == true) {
+                return Center(
+                  child: Icon(Icons.error_outline),
+                );
+              } else {
+                return Center(
+                  child: Icon(Icons.error),
+                );
+              }
+            })
       ],
-    );
+    ));
   }
 
   /**

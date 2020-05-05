@@ -7,6 +7,7 @@ import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
 import 'package:moojik/src/services/audioService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class AudioFun extends BaseService {
   static const platformMethodChannel =
       const MethodChannel('com.moojikflux/music');
@@ -51,15 +52,16 @@ class AudioFun extends BaseService {
         return new Future.value("");
         break;
       case "setDownloadStatus":
-        downloadQueue[call.arguments]=true;
+        downloadQueue[call.arguments] = true;
         playerStates.triggerIsDownloading(downloadQueue);
         return new Future.value("");
         break;
-       case "setDownloadComplete":
-         if(downloadQueue.containsKey(call.arguments[0])) downloadQueue[call.arguments[0]] = false;
-         AudioService.customAction("UpdateMediaItem",call.arguments);
-         playerStates.triggerIsDownloading(downloadQueue);
-         return new Future.value("");
+      case "setDownloadComplete":
+        if (downloadQueue.containsKey(call.arguments[0]))
+          downloadQueue[call.arguments[0]] = false;
+        AudioService.customAction("UpdateMediaItem", call.arguments);
+        playerStates.triggerIsDownloading(downloadQueue);
+        return new Future.value("");
     }
   }
 
@@ -91,10 +93,13 @@ class AudioFun extends BaseService {
     if (!AudioService.running) {
       await startAudioService();
     }
-    if(album == "Searched Songs"){
+    if (album == "TrendingSongs") {
+      await DBProvider.db.addSongtoDb(song);
+    }
+    if (album == "Searched Songs" || album == "TrendingSongs") {
       var values = await DBProvider.db.isInDownloadedSong(song.youtubeUrl);
       song.isDownloaded = values[0];
-      values[0]?song.localUrl = values[1]:song.localUrl="";
+      values[0] ? song.localUrl = values[1] : song.localUrl = "";
     }
     await AudioService.addQueueItem(MediaItem(
         id: song.isDownloaded ? song.localUrl : song.youtubeUrl,
@@ -129,7 +134,10 @@ class AudioFun extends BaseService {
             artUri: f.thumbnailUrl != ""
                 ? f.thumbnailUrl
                 : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
-            extras: {"youtubeUrl": f.youtubeUrl,"isDownloaded":"${f.isDownloaded}"}));
+            extras: {
+              "youtubeUrl": f.youtubeUrl,
+              "isDownloaded": "${f.isDownloaded}"
+            }));
       });
       await AudioService.playFromMediaId(songs[0].youtubeUrl);
     }
@@ -137,22 +145,21 @@ class AudioFun extends BaseService {
 
   addToDownload(String youtubeUrl) async {
     if (!isInTheQueue(youtubeUrl)) {
-      downloadQueue[youtubeUrl.split("/watch?v=")[1]] =true;
+      downloadQueue[youtubeUrl.split("/watch?v=")[1]] = true;
       playerStates.triggerIsDownloading(downloadQueue);
       await platformMethodChannel.invokeMethod(
           "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
       return true;
-    }
-    else{
+    } else {
       return false;
     }
   }
 
   isInTheQueue(String youtubeUrl) {
-      if (downloadQueue.containsKey(youtubeUrl)) {
-        return true;
-      } else {
-        return false;
-      }
+    if (downloadQueue.containsKey(youtubeUrl)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

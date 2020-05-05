@@ -145,6 +145,7 @@ class PlayerViewState extends State<PlayerView>
   AppBar appBar() {
     return AppBar(
       centerTitle: true,
+      leading: IconButton(icon: Icon(Icons.keyboard_arrow_down), onPressed: () => Navigator.pop(context),),
       title: Text("Playing from $playingFrom"),
       elevation: 0,
       backgroundColor: colors != null ? colors : Color(0xFF1B262C),
@@ -615,7 +616,7 @@ class PlayerViewState extends State<PlayerView>
     if (mediaItem != null && mediaItem.artUri != null) {
       return CircleAvatar(
         backgroundImage: CachedNetworkImageProvider(
-          mediaItem.artUri,
+          mediaItem.artUri.split("?")[0]!=""?mediaItem.artUri.split("?")[0]:mediaItem.artUri
         ),
         backgroundColor: colors,
         foregroundColor: colors,
