@@ -12,8 +12,7 @@ Future<List<Song>> trendingSongs() async {
     if (stringList != null &&
         DateTime.now().difference(DateTime.tryParse(stringList[0])).inMinutes <
             5) {
-       trendingBloc
-          .addTrendingSongs(await compute(parseVideo, stringList[2]));
+      trendingBloc.addTrendingSongs(await compute(parseVideo, stringList[2]));
     } else {
       if (stringList != null) {
         trendingBloc.addTrendingSongs(await compute(parseVideo, stringList[2]));
@@ -28,7 +27,7 @@ Future<List<Song>> trendingSongs() async {
         response.body
       ];
       prefs.setStringList("TrendingPage", _stringList);
-       trendingBloc.addTrendingSongs(await compute(parseVideo, stringList[2]));
+      trendingBloc.addTrendingSongs(await compute(parseVideo,response.body));
     }
   } catch (e) {
     print(e);

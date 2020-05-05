@@ -2,6 +2,7 @@ import 'package:moojik/src/views/CurrentPlaylistView.dart';
 import 'package:moojik/src/views/PlayListDetailView.dart';
 import 'package:moojik/src/views/PlayerView.dart';
 import 'package:flutter/material.dart';
+import 'package:moojik/src/views/SettingsView.dart';
 import './src/views/HomeView.dart';
 
 import './routing_constants.dart';
@@ -20,6 +21,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case CurrentPlaylistRoute:
       return MaterialPageRoute(
           builder: (context) => CurrentPlaylistView());
+    case SettingsRoute:
+      return MaterialPageRoute(
+          builder: (context) => SettingsView());
     default:
       return MaterialPageRoute(builder: (context) => HomeView());
   }

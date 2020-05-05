@@ -26,7 +26,7 @@ class AudioFun extends BaseService {
       backgroundTaskEntrypoint: myBackgroundTaskEntrypoint,
       androidNotificationChannelName: 'Moojic Service',
       notificationColor: 0xFF2196f3,
-      androidNotificationIcon: 'mipmap/ic_launcher',
+      androidNotificationIcon: 'drawable/ic_launcher_notification',
       enableQueue: true,
       resumeOnClick: true,
     );

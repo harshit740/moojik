@@ -52,6 +52,9 @@ flutter:
      - assets/pause(1).svg
      - assets/down-group2.svg
      - assets/Group1(1).svg
+     - assets/homeButton.svg
+     - assets/searchButton.svg
+     - assets/libraryButton.svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class. pause.svg   play-button.svg

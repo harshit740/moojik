@@ -1,4 +1,8 @@
+import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
+
 import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/views/HomeView.dart';
@@ -33,7 +37,12 @@ class MyApp extends StatelessWidget {
           textTheme: Theme.of(context).textTheme.apply(
               bodyColor: Color(0xfff2f2f2),
               displayColor: Color(0xfff2f2f2),
-              fontFamily: 'Gilroy')),
+              fontFamily: 'Gilroy'),
+          primarySwatch: MaterialColor(4280361249, {
+        50: Color(0xFF000B1C),
+        100: Color(0xFF000B1C),
+        200: Color(0xFF000B1C),
+      })),
       darkTheme: ThemeData(
         fontFamily: 'Gilroy',
         brightness: Brightness.dark,
@@ -73,6 +82,8 @@ class _MyHomePageState extends State<MyHomePage>
   bool isPlaying = false;
   int _selectedIndex = 0;
   bool isStarted = false;
+  final String homeButtonSVG = 'assets/homeButton.svg';
+
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
@@ -171,11 +182,25 @@ class _MyHomePageState extends State<MyHomePage>
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
-                Title(child: Text("MoojikFlux"),color: Colors.white,),
+                Title(
+                  child: Text("MoojikFlux"),
+                  color: Colors.white,
+                ),
                 Text("              "),
-                Title(child: Text("Home"),color: Colors.white,),
-            ],),
-              actions: <Widget>[CircleAvatar(),],
+                Title(
+                  child: Text("Home"),
+                  color: Colors.white,
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () {
+                  Navigator.pushNamed(context, SettingsRoute);
+                },
+              )
+            ],
           ),
           body: Column(
             children: <Widget>[
@@ -189,98 +214,109 @@ class _MyHomePageState extends State<MyHomePage>
                   ],
                 ),
               ),
-              Container(child: Row(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  if (AudioService.currentMediaItem != null) ...[
-                    if (isStarted) ...[
-                      CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            AudioService.currentMediaItem.artUri,
-                          )),
-                      Container(
-                        width: MediaQuery.of(context).size.width / 1.5,
-                        child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            reverse: true,
-                            child: GestureDetector(
-                                onTap: () => Navigator.pushNamed(
-                                    context, PlayerViewRoute),
-                                child: Text(
-                                  AudioService.currentMediaItem.title,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ))),
-                      ),
-                      if (AudioService.playbackState != null && !isPlaying ||
-                          AudioService.playbackState.basicState ==
-                              BasicPlaybackState.paused) ...[
-                        IconButton(
-                            onPressed: () async {
-                              setState(() {
-                                isPlaying = true;
-                              });
-                              await AudioService.play();
-                            },
-                            iconSize: 45,
-                            icon: Icon(
-                              Icons.play_circle_filled,
-                              size: 45,
-                              color: Colors.white,
-                            ))
-                      ] else if (AudioService.playbackState != null &&
-                          isPlaying ||
-                          AudioService.playbackState.basicState ==
-                              BasicPlaybackState.playing) ...[
-                        IconButton(
-                            onPressed: () {
-                              setState(() {
-                                isPlaying = false;
-                              });
-                              AudioService.pause();
-                            },
-                            iconSize: 45,
-                            icon: Icon(
-                              Icons.pause_circle_filled,
-                              size: 45,
-                              color: Colors.white,
-                            ))
-                      ] else if (AudioService.playbackState.basicState ==
-                          BasicPlaybackState.connecting) ...[
-                        CircularProgressIndicator()
+              Container(
+                color: Color(0xFF01183D),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    if (AudioService.currentMediaItem != null) ...[
+                      if (isStarted) ...[
+                        CircleAvatar(
+                            backgroundImage: NetworkImage(
+                          AudioService.currentMediaItem.artUri,
+                        )),
+                        Container(
+                          width: MediaQuery.of(context).size.width / 1.5,
+                          child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              reverse: true,
+                              child: GestureDetector(
+                                  onTap: () => Navigator.pushNamed(
+                                      context, PlayerViewRoute),
+                                  child: Text(
+                                    AudioService.currentMediaItem.title,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ))),
+                        ),
+                        if (AudioService.playbackState != null && !isPlaying ||
+                            AudioService.playbackState.basicState ==
+                                BasicPlaybackState.paused) ...[
+                          IconButton(
+                              onPressed: () async {
+                                setState(() {
+                                  isPlaying = true;
+                                });
+                                await AudioService.play();
+                              },
+                              iconSize: 45,
+                              icon: Icon(
+                                Icons.play_circle_filled,
+                                size: 45,
+                                color: Colors.white,
+                              ))
+                        ] else if (AudioService.playbackState != null &&
+                                isPlaying ||
+                            AudioService.playbackState.basicState ==
+                                BasicPlaybackState.playing) ...[
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  isPlaying = false;
+                                });
+                                AudioService.pause();
+                              },
+                              iconSize: 45,
+                              icon: Icon(
+                                Icons.pause_circle_filled,
+                                size: 45,
+                                color: Colors.white,
+                              ))
+                        ] else if (AudioService.playbackState.basicState ==
+                            BasicPlaybackState.connecting) ...[
+                          CircularProgressIndicator()
+                        ]
                       ]
                     ]
-                  ]
-                ],
-              ),)
+                  ],
+                ),
+              )
               //_widgetOptions.elementAt(_selectedIndex),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
             backgroundColor: Color(0xFF01183D),
-            items: const <BottomNavigationBarItem>[
+            items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.home,
-                  color: Colors.white,
-                ),
+                icon:  SvgPicture.asset(
+            'assets/homeButton.svg',
+            color: Colors.white,
+            width: 25,
+            height: 25,
+            semanticsLabel: "Library",
+          ),
                 title: Text('Home'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.search,
+                icon: SvgPicture.asset(
+                  'assets/searchButton.svg',
                   color: Colors.white,
+                  width: 25,
+                  height: 25,
                 ),
                 title: Text('Search'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.library_music,
+                icon: SvgPicture.asset(
+                  'assets/libraryButton.svg',
                   color: Colors.white,
+                  width: 25,
+                  height: 25,
+                  semanticsLabel: "Library",
                 ),
                 title: Text('PlayList'),
               ),
