@@ -13,8 +13,6 @@ import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationManagerCompat
 import com.github.kiulian.downloader.OnYoutubeDownloadListener
 import com.github.kiulian.downloader.YoutubeDownloader
-import com.moojik.moojik.MainActivity.Companion.CHANNEL
-import com.moojik.moojik.MainActivity.Companion.flutterEngineInstance
 import io.flutter.Log
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.util.PathUtils
@@ -45,10 +43,7 @@ class DownloadService : JobIntentService() {
     private lateinit var notification: Notification
 
     override fun onCreate() {
-        channel = MethodChannel(flutterEngineInstance.dartExecutor.binaryMessenger, CHANNEL)
         try {
-            outDir = File(PathUtils.getDataDirectory(this), "/Moojik/")
-            Log.d("DownloadService", "DownloadService Started")
             createNotificationChannel()
             if (!outDir.exists()) {
                 val mkdirs = outDir.mkdirs()
@@ -61,9 +56,9 @@ class DownloadService : JobIntentService() {
 
     override fun onDestroy() {
         super.onDestroy()
-        stopSelf();
     }
     override fun onHandleWork(intent: Intent) {
+        outDir = File(PathUtils.getDataDirectory(this), "/Moojik/")
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setSubText("$currentQueueSize Files Downloading")
             builder.setContentTitle("Starting")

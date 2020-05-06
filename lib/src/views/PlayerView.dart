@@ -164,6 +164,7 @@ class PlayerViewState extends State<PlayerView>
     var maxRedius;
     int virticalMarginBetweenControls;
     int bodyBottomPadding;
+    var bottomBody = 10;
     if (hightExludingAppbar > 660) {
       minRedius = 125;
       maxRedius = 150;
@@ -181,14 +182,23 @@ class PlayerViewState extends State<PlayerView>
       virticalMarginBetweenControls = 15;
     } else if (hightExludingAppbar < 630) {
       minRedius = 100;
-      maxRedius = 110;
+      maxRedius = 105;
       virticalMarginBetweenControls = 15;
       bodyBottomPadding = 5;
+      bottomBody = 3;
     } else if (hightExludingAppbar < 598) {
       minRedius = 100;
-      maxRedius = 110;
+      maxRedius = 100;
       virticalMarginBetweenControls = 0;
       bodyBottomPadding = 0;
+      bottomBody = 0;
+    }
+    else if (hightExludingAppbar < 590) {
+      minRedius = 80;
+      maxRedius = 80;
+      virticalMarginBetweenControls = 0;
+      bodyBottomPadding = 0;
+      bottomBody = 0;
     }
     return Scaffold(
         backgroundColor: colors != null ? colors : Color(0xFF1B262C),
@@ -231,7 +241,7 @@ class PlayerViewState extends State<PlayerView>
                                 children: <Widget>[
                                   Container(
                                       padding: EdgeInsets.only(
-                                          left: 10, right: 10, bottom: 10),
+                                          left: 10, right: 10, bottom: bottomBody.toDouble()),
                                       child: Center(
                                           child: Container(
                                               child: InkWell(

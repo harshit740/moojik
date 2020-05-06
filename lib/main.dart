@@ -107,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage>
   void initState() {
     super.initState();
     AudioService.playbackStateStream.listen((onData) {
-      if (AudioService.running) {
         if (onData.basicState == BasicPlaybackState.none) {
           setState(() {
             isStarted = false;
@@ -126,7 +125,6 @@ class _MyHomePageState extends State<MyHomePage>
             isPlaying = false;
           });
         }
-      }
     });
     if (AudioService.playbackState != null) {
       if (AudioService.playbackState.basicState == BasicPlaybackState.paused) {
