@@ -177,7 +177,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       final prefs = await SharedPreferences.getInstance();
       List<String> data = prefs.getStringList(mediaItem.id);
       if (data != null) {
-        if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 8) {
+        if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 5) {
           mediaItem.artUri = data[1];
           mediaItem.id = data[0];
           var duration = await _audioPlayer.setUrl(mediaItem.id);

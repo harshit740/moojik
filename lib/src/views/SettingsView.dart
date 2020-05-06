@@ -16,6 +16,10 @@ class SettingsView extends StatelessWidget {
                 "About",
                 style: TextStyle(fontSize: 24),
               ),
+              Text(
+                "Version 0.2.2",
+                style: TextStyle(fontSize: 24),
+              ),
               Row(
                 children: <Widget>[
                   Container(
