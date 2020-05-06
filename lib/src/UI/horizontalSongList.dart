@@ -1,10 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:moojik/src/services/AudioFun.dart';
+import 'package:moojik/src/services/MusicHelperService.dart';
 import 'package:moojik/src/services/BaseService.dart';
 
 class HorizontalSongList extends StatelessWidget {

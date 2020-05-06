@@ -1,6 +1,4 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 
 class SettingsView extends StatelessWidget {
@@ -51,21 +49,3 @@ class SettingsView extends StatelessWidget {
         ));
   }
 }
-
-/*
-* RichText(
-                text: TextSpan(
-                    text: 'Don\'t have an account?',
-                    style: TextStyle(
-                        color: Colors.black, fontSize: 18),
-                    children: <TextSpan>[
-                      TextSpan(text: ' Made with<3',
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 18),
-                      ),
-                      TextSpan(text: "TextSpan",style:  TextStyle(
-                          color: Colors.white, fontSize: 18),)
-                    ]
-                ),
-              )
-* **/

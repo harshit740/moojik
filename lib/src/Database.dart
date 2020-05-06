@@ -50,11 +50,11 @@ class DBProvider {
     }
   }
 
-  addSongtoDb(song) async {
+  addSongtoDb(Song song) async {
     final db = await database;
     try {
       var res = await db.rawInsert(
-          "INSERT Into Songs (title,desc,youtubeUrl,localUrl,isDownloaded,thumbnailUrl) VALUES ('${song.title}','${song.desc}','${song.youtubeUrl}','${song.localUrl}','${song.isDownloaded}','${song.thumbnailUrl}')");
+          "INSERT Into Songs (title,desc,youtubeUrl,localUrl,isDownloaded,thumbnailUrl) VALUES ('${song.title.replaceAll("'","")}','${song.desc}','${song.youtubeUrl}','${song.localUrl}','${song.isDownloaded}','${song.thumbnailUrl}')");
       return res;
     } catch (e) {
       if (e.toString().contains('UNIQUE constraint failed:')) {
@@ -68,11 +68,11 @@ class DBProvider {
 
   addToLikedSongs(song, playlistID) async {
     try {
-      var sondid = await addSongtoDb(song);
+      var songId = await addSongtoDb(song);
       if (playlistID == null) {
-        await addToPlayList(sondid, 1);
+        await addToPlayList(songId, 1);
       } else {
-        await addToPlayList(sondid, playlistID);
+        await addToPlayList(songId, playlistID);
       }
     } catch (e) {}
   }
@@ -255,6 +255,7 @@ class DBProvider {
       return sungs;
     } catch (e) {
       print(e);
+      return e;
     }
   }
 

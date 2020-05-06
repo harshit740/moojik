@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:moojik/src/UI/SongWidget.dart';
-
-import '../bloc/searchService.dart';
+import 'package:moojik/src/bloc/searchBloc.dart';
 
 class SearchView extends StatelessWidget {
-
   Widget searchIcon() {
     return StreamBuilder(
         stream: searchBlox.issearching,
@@ -24,8 +22,7 @@ class SearchView extends StatelessWidget {
         maintainBottomViewPadding: true,
         child: Container(
             padding: EdgeInsets.all(1),
-            child: Column(
-                mainAxisSize: MainAxisSize.max, children: <Widget>[
+            child: Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
               TextField(
                 autofocus: true,
                 onChanged: searchBlox.changesearchTerm,

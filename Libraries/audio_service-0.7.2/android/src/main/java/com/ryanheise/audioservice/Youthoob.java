@@ -23,7 +23,6 @@ class Youthoob implements Runnable {
         this.channel = channel;
         this.url = url;
     }
-
     @Override
     public void run() {
         YoutubeVideo video = null;
@@ -41,12 +40,10 @@ class Youthoob implements Runnable {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                channel.invokeMethod("setYoutubeLink",getValue());
+                channel.invokeMethod("setYoutubeLink",videoList);
             }
         });
-
-    }
-    public List<String> getValue() {
-        return videoList;
+        Log.d("YouthoobService","Work is DOne");
+        return;
     }
 }

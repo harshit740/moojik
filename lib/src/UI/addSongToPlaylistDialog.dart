@@ -2,7 +2,7 @@ import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:flutter/material.dart';
 
-displayAddtoDialog(
+displayAddToDialog(
   BuildContext context,
 ) {
   return showDialog(

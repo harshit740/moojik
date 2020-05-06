@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:moojik/src/bloc/bloc.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/utils/trendingSongs.dart';
 import 'package:rxdart/rxdart.dart';
 
-class TrendingBloc {
+class TrendingBloc extends Bloc{
   TrendingBloc() {
     triggerTrendingSOngs();
   }
@@ -14,8 +15,12 @@ class TrendingBloc {
   Stream<List<Song>> get getTrendingSongs => _tredingSongs.stream;
 
   triggerTrendingSOngs() async {
-    print("Triggerd Tresnding");
     trendingSongs();
+  }
+
+  @override
+  void dispose() {
+    _tredingSongs.close();
   }
 }
 

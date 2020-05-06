@@ -1,5 +1,5 @@
 on: push
-name: Test, Build and Release apk
+name:  Build and Release apk
 jobs:
   build:
     name: Build APK
@@ -16,7 +16,7 @@ jobs:
         env:
           LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - run: flutter pub get &
-      - run: flutter build apk --target-platform android-arm,android-arm64,android-x64 --split-per-abi
+      - run: flutter build apk --target-platform android-arm,android-arm64,android-x64 --split-per-abi --shrink
         env:
           KEY_ALIAS: ${{ secrets.keystore_alias }}
           STORE_PASS: ${{ secrets.keystore_password }}

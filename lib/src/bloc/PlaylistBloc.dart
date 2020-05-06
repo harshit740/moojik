@@ -5,7 +5,6 @@ import 'package:rxdart/rxdart.dart';
 class PlayListBloc {
   //searchterm StreamControlle
   PlayListBloc() {
-    print("object");
     this.gettAllPlaylistStream();
   }
   final _playLists = BehaviorSubject<List<PlayList>>();
@@ -23,8 +22,6 @@ class PlayListBloc {
     this.addPlayLists(await DBProvider.db.getAllPlayList());
   //  trigerFetching(false);
   }
-
-  void addoneplayList(PlayList onelist) async {}
 
   void delete(playlistID) {
     DBProvider.db.deletePlayList(playlistID);

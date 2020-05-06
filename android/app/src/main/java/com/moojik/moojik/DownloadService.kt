@@ -59,6 +59,10 @@ class DownloadService : JobIntentService() {
         super.onCreate()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        stopSelf();
+    }
     override fun onHandleWork(intent: Intent) {
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setSubText("$currentQueueSize Files Downloading")
@@ -111,9 +115,10 @@ class DownloadService : JobIntentService() {
         })
     }
 
+
     fun updateDb(youtubeurl: String, localUrl: String, thumbnailUrl: String) {
        val file = File(PathUtils.getDataDirectory(this), "MoojkFlux.db")
-       val moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
+       var moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
         val list = ArrayList<String>()
         list.add(youtubeurl)
         list.add(localUrl)
@@ -123,10 +128,29 @@ class DownloadService : JobIntentService() {
         downloadQueue[youtubeurl] = false
         val youtubeUrl = "/watch?v=$youtubeurl"
         val query = "update songs set isDownloaded=1 ,localUrl='$localUrl' ,thumbnailUrl='$thumbnailUrl' where youtubeUrl = '$youtubeUrl'"
-        moojikDatabase.execSQL(query)
+        moojikDatabase.execSQL(query);
         moojikDatabase.close()
+        moojikDatabase = null;
+        Log.d("Download Service ","kam ho gaya ");
+        NotificationManagerCompat.from(applicationContext).apply {
+            builder.setContentText("Download Complete")
+            builder.setProgress(0, 0, false)
+            builder.setOngoing(false)
+            builder.setAutoCancel(true)
+            notify(2, builder.build())
+        }
+        return
     }
-
+    override fun onStopCurrentWork(): Boolean {
+        NotificationManagerCompat.from(applicationContext).apply {
+            builder.setContentText("Download Complete")
+            builder.setProgress(0, 0, false)
+            builder.setOngoing(false)
+            builder.setAutoCancel(true)
+            notify(2, builder.build())
+        }
+        return super.onStopCurrentWork()
+    }
     private fun createNotificationChannel() {
         builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(this, "MoojikDownload")

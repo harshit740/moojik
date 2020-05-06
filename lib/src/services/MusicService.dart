@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:moojik/src/Database.dart';
@@ -35,12 +36,12 @@ MediaControl stopControl = MediaControl(
   action: MediaAction.stop,
 );
 
-void myBackgroundTaskEntrypoint(queue) {
+void myBackgroundTaskEntrypoint() {
   AudioServiceBackground.run(() => MyBackgroundTask());
 }
 
 class MyBackgroundTask extends BackgroundAudioTask {
-  List<MediaItem> _queue = <MediaItem>[];
+  static List<MediaItem> _queue = <MediaItem>[];
   final _mediaItems = <String, MediaItem>{};
   int _queueIndex = -1;
   AudioPlayer _audioPlayer = new AudioPlayer();
@@ -54,10 +55,8 @@ class MyBackgroundTask extends BackgroundAudioTask {
   bool firstTime;
 
   MediaItem get mediaItem => _queue[_queueIndex];
-  int offset;
   PaletteGenerator paletteGenerator;
   Color colors;
-  final GlobalKey imageKey = GlobalKey();
 
   BasicPlaybackState _stateToBasicState(AudioPlaybackState state) {
     switch (state) {
@@ -160,13 +159,13 @@ class MyBackgroundTask extends BackgroundAudioTask {
     }
     // Load next item
     _queueIndex = newPos;
-    mediaItem.extras['lyrics'] = "Getting YOur Lyrics calm down";
+    mediaItem.extras['lyrics'] = "Getting Your Lyrics calm down";
     AudioServiceBackground.setMediaItem(mediaItem);
     _skipState = offset > 0
         ? BasicPlaybackState.skippingToNext
         : BasicPlaybackState.skippingToPrevious;
     _setState(state: BasicPlaybackState.connecting);
-    getLyrics(mediaItem.title);
+    await getLyrics(mediaItem.title);
     if (!mediaItem.id.contains("/watch?v=")) {
       var duration = await _audioPlayer.setUrl(mediaItem.id);
       mediaItem.duration = duration.inMilliseconds;
@@ -264,6 +263,11 @@ class MyBackgroundTask extends BackgroundAudioTask {
   }
 
   @override
+  void onAudioFocusLost() {
+    _audioPlayer.pause();
+  }
+
+  @override
   void onStop() {
     _setState(state: BasicPlaybackState.stopped);
     _audioPlayer.stop();
@@ -319,14 +323,18 @@ class MyBackgroundTask extends BackgroundAudioTask {
       prefs.setStringList(mediaItem.extras['youtubeUrl'],
           [details[0], details[1], DateTime.now().toString()]);
     } else {
-      _queue.forEach((f) {
-        if (f.extras['youtubeUrl'].split("?v=")[1] == details[2]) {
-          f.id = details[0];
-          f.artUri = details[1];
-        }
-      });
+       compute(addParsedToQueue,details);
     }
     return await _updatePaletteGenerator();
+  }
+
+  static addParsedToQueue(List details) async {
+    _queue.forEach((f) {
+      if (f.extras['youtubeUrl'].split("?v=")[1] == details[2]) {
+        f.id = details[0];
+        f.artUri = details[1];
+      }
+    });
   }
 
   getLyrics(String title) async {
@@ -342,7 +350,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
         !mediaItem.extras.containsKey('colors')) {
       paletteGenerator = await PaletteGenerator.fromImageProvider(
           CachedNetworkImageProvider(mediaItem.artUri),
-          maximumColorCount: 9,
+          maximumColorCount: 6,
           timeout: Duration(seconds: 50));
       if (paletteGenerator.darkMutedColor != null) {
         colors = paletteGenerator.darkMutedColor.color;

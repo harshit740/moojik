@@ -80,7 +80,7 @@ class PlayListViewState extends State<PlayListView> {
                               return;
                             },
                             child: PlaylistItem(
-                                playlistitem: snapshot.data[index]));
+                                playlistItem: snapshot.data[index]));
                       }));
             } else {
               return Center(

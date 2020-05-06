@@ -10,7 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'SongWidget.dart';
 
 class SongList extends StatefulWidget {
-  List<Song> playList;
+  final List<Song> playList;
   final PlayList playListItem;
 
   SongList({Key key, this.playList, this.playListItem}) : super(key: key);
@@ -23,6 +23,7 @@ class _SongListState extends State<SongList> {
   var currentSong;
   bool isDeleteFromFile = false;
   BuildContext context;
+
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +106,7 @@ class _SongListState extends State<SongList> {
                   );
                 });
           } else if (snapshot.hasData) {
-            debugPrint("called  ${AudioService.browseMediaChildren}");
+            debugPrint("called  ${snapshot.data}");
             return ListView.builder(
                 itemCount: snapshot.data.length,
                 shrinkWrap: true,

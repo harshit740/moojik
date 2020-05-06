@@ -1,7 +1,6 @@
-import 'package:eva_icons_flutter/eva_icons_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_svg/svg.dart';
 
 import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
@@ -39,10 +38,10 @@ class MyApp extends StatelessWidget {
               displayColor: Color(0xfff2f2f2),
               fontFamily: 'Gilroy'),
           primarySwatch: MaterialColor(4280361249, {
-        50: Color(0xFF000B1C),
-        100: Color(0xFF000B1C),
-        200: Color(0xFF000B1C),
-      })),
+            50: Color(0xFF000B1C),
+            100: Color(0xFF000B1C),
+            200: Color(0xFF000B1C),
+          })),
       darkTheme: ThemeData(
         fontFamily: 'Gilroy',
         brightness: Brightness.dark,
@@ -82,10 +81,6 @@ class _MyHomePageState extends State<MyHomePage>
   bool isPlaying = false;
   int _selectedIndex = 0;
   bool isStarted = false;
-  final String homeButtonSVG = 'assets/homeButton.svg';
-
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
   void _onItemTapped(int index) async {
     _tabController.animateTo(index);
@@ -108,29 +103,29 @@ class _MyHomePageState extends State<MyHomePage>
     _tabController.addListener(_setActiveTabIndex);
   }
 
-  onChange() {}
-
   @override
   void initState() {
     super.initState();
     AudioService.playbackStateStream.listen((onData) {
-      if (onData.basicState == BasicPlaybackState.none) {
-        setState(() {
-          isStarted = false;
-        });
-      } else {
-        setState(() {
-          isStarted = true;
-        });
-      }
-      if (onData.basicState == BasicPlaybackState.playing) {
-        setState(() {
-          isPlaying = true;
-        });
-      } else if (onData.basicState == BasicPlaybackState.paused) {
-        setState(() {
-          isPlaying = false;
-        });
+      if (AudioService.running) {
+        if (onData.basicState == BasicPlaybackState.none) {
+          setState(() {
+            isStarted = false;
+          });
+        } else {
+          setState(() {
+            isStarted = true;
+          });
+        }
+        if (onData.basicState == BasicPlaybackState.playing) {
+          setState(() {
+            isPlaying = true;
+          });
+        } else if (onData.basicState == BasicPlaybackState.paused) {
+          setState(() {
+            isPlaying = false;
+          });
+        }
       }
     });
     if (AudioService.playbackState != null) {
@@ -158,13 +153,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-
     return DefaultTabController(
         length: 3,
         initialIndex: 0,
@@ -224,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage>
                     if (AudioService.currentMediaItem != null) ...[
                       if (isStarted) ...[
                         CircleAvatar(
-                            backgroundImage: NetworkImage(
+                            backgroundImage: CachedNetworkImageProvider(
                           AudioService.currentMediaItem.artUri,
                         )),
                         Container(
@@ -292,13 +280,13 @@ class _MyHomePageState extends State<MyHomePage>
             backgroundColor: Color(0xFF01183D),
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon:  SvgPicture.asset(
-            'assets/homeButton.svg',
-            color: Colors.white,
-            width: 25,
-            height: 25,
-            semanticsLabel: "Library",
-          ),
+                icon: SvgPicture.asset(
+                  'assets/homeButton.svg',
+                  color: Colors.white,
+                  width: 25,
+                  height: 25,
+                  semanticsLabel: "Library",
+                ),
                 title: Text('Home'),
               ),
               BottomNavigationBarItem(

@@ -11,7 +11,7 @@ import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/ScreenStateModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
-import 'package:moojik/src/services/AudioFun.dart';
+import 'package:moojik/src/services/MusicHelperService.dart';
 import 'package:moojik/src/services/BaseService.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -155,6 +155,7 @@ class PlayerViewState extends State<PlayerView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     var screenSize = MediaQuery.of(context).size;
     var width = screenSize.width;
     var height = screenSize.height;
@@ -276,7 +277,8 @@ class PlayerViewState extends State<PlayerView>
                                                   scrollDirection:
                                                       Axis.vertical,
                                                   child: Text(
-                                                    mediaItem.extras['lyrics'],
+                                                    mediaItem !=null ?
+                                                    mediaItem.extras['lyrics']:"No Audio is Beign Played",
                                                     textAlign: TextAlign.center,
                                                     textDirection:
                                                         TextDirection.ltr,
@@ -327,6 +329,7 @@ class PlayerViewState extends State<PlayerView>
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 25),
+                                              textAlign: TextAlign.center,
                                             ),
                                           ],
                                         ],
@@ -375,7 +378,7 @@ class PlayerViewState extends State<PlayerView>
                                                     CurrentPlaylistRoute)),
                                         isDownloading
                                             ? CircularProgressIndicator()
-                                            : mediaItem.extras[
+                                            :mediaItem!=null &&  mediaItem.extras[
                                                         "isDownloaded"] ==
                                                     "false"
                                                 ? IconButton(

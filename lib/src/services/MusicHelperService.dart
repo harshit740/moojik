@@ -1,19 +1,15 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
-import 'package:moojik/src/services/audioService.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:moojik/src/services/MusicService.dart';
 
 class AudioFun extends BaseService {
   static const platformMethodChannel =
       const MethodChannel('com.moojikflux/music');
-  Song oneSong;
   Map<String, dynamic> downloadQueue = <String, bool>{};
-  List<Song> songQueue = [];
 
   AudioFun() {
     platformMethodChannel.setMethodCallHandler(_handleMethod);
@@ -24,33 +20,16 @@ class AudioFun extends BaseService {
     await AudioService.start(
       androidNotificationChannelDescription: "MoojikFlux",
       backgroundTaskEntrypoint: myBackgroundTaskEntrypoint,
-      androidNotificationChannelName: 'Moojic Service',
-      notificationColor: 0xFF2196f3,
+      androidNotificationChannelName: 'MoojicService',
+      notificationColor: 0xFF01183D,
       androidNotificationIcon: 'drawable/ic_launcher_notification',
       enableQueue: true,
       resumeOnClick: true,
     );
   }
 
-  @override
-  Future<Null> getYoutubeLenk(String url) async {
-    String _message;
-    try {
-      final String result =
-          await platformMethodChannel.invokeMethod('getYoutubeLenk', url);
-      _message = result;
-    } on PlatformException catch (e) {
-      _message = "Problem Retriving Lenk: ${e.message}.";
-    }
-    print(_message);
-  }
-
   Future<dynamic> _handleMethod(MethodCall call) async {
     switch (call.method) {
-      case "setYoutubeLenk":
-        setUrl(call.arguments);
-        return new Future.value("");
-        break;
       case "setDownloadStatus":
         downloadQueue[call.arguments] = true;
         playerStates.triggerIsDownloading(downloadQueue);
@@ -63,29 +42,6 @@ class AudioFun extends BaseService {
         playerStates.triggerIsDownloading(downloadQueue);
         return new Future.value("");
     }
-  }
-
-  void setUrl(arguments) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> details = [];
-    details.add(arguments[1]);
-    details.add(arguments[2]);
-    details.add(DateTime.now().toString());
-    prefs.setStringList(oneSong.youtubeUrl, details);
-    if (!AudioService.running) {
-      await startAudioService();
-    }
-    await AudioService.addQueueItem(MediaItem(
-        id: arguments[1],
-        title: oneSong.title,
-        album: "hgh",
-        artUri: arguments[2],
-        displaySubtitle: oneSong.title,
-        extras: {
-          "youtubeUrl": oneSong.youtubeUrl,
-          "isDownloaded": oneSong.isDownloaded
-        }));
-    await AudioService.skipToNext();
   }
 
   @override
@@ -143,6 +99,7 @@ class AudioFun extends BaseService {
     }
   }
 
+  @override
   addToDownload(String youtubeUrl) async {
     if (!isInTheQueue(youtubeUrl)) {
       downloadQueue[youtubeUrl.split("/watch?v=")[1]] = true;

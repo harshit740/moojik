@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:moojik/routing_constants.dart';
 import 'package:moojik/service_locator.dart';
 import 'package:moojik/src/Database.dart';
-import 'package:moojik/src/UI/addSongtoPlaylist.dart';
+import 'package:moojik/src/UI/addSongToPlaylistDialog.dart';
 import 'package:moojik/src/UI/newPlaylistDialog.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
 import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
-import 'package:moojik/src/services/AudioFun.dart';
+import 'package:moojik/src/services/MusicHelperService.dart';
 import 'package:moojik/src/services/BaseService.dart';
 
 _navigateAndaddToPlayList(Song song, BuildContext context) async {
-  final String playlistID = await displayAddtoDialog(context);
+  final String playlistID = await displayAddToDialog(context);
   if (playlistID == 'CreatePlayList') {
     final String playlistname = await displayDialog(context);
     if (playlistname != null) {
       await DBProvider.db.createPlaylist(playlistname);
-      final String playlistID = await displayAddtoDialog(context);
+      final String playlistID = await displayAddToDialog(context);
       await DBProvider.db.addToLikedSongs(song, playlistID);
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -59,22 +59,23 @@ class _SongWidgetState extends State<SongWidget> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if(widget.song.youtubeUrl.contains("?v=")){
-    playerStates.isDownloading.listen((onData) {
-      if (mounted) {
-        if (_myService.downloadQueue
-            .containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
-          setState(() {
-            isDownloading = _myService
-                .downloadQueue[widget.song.youtubeUrl.split("?v=")[1]];
-          });
-          if (!_myService
-              .downloadQueue[widget.song.youtubeUrl.split("?v=")[1]]) {
-            widget.song.isDownloaded = true;
+    if (widget.song.youtubeUrl.contains("?v=")) {
+      playerStates.isDownloading.listen((onData) {
+        if (mounted) {
+          if (_myService.downloadQueue
+              .containsKey(widget.song.youtubeUrl.split("?v=")[1])) {
+            setState(() {
+              isDownloading = _myService
+                  .downloadQueue[widget.song.youtubeUrl.split("?v=")[1]];
+            });
+            if (!_myService
+                .downloadQueue[widget.song.youtubeUrl.split("?v=")[1]]) {
+              widget.song.isDownloaded = true;
+            }
           }
         }
-      }
-    });}
+      });
+    }
   }
 
   addToLikedSongs(song, context) {
@@ -167,9 +168,8 @@ class _SongWidgetState extends State<SongWidget> {
     return Container(
         padding: EdgeInsets.all(15.0),
         child: InkWell(
-
             onTap: () {
-              if (widget.song.title.contains("- Playlist")||
+              if (widget.song.title.contains("- Playlist") ||
                   widget.song.youtubeUrl.contains('&list=')) {
                 Navigator.pushNamed(context, PlayListDetailRoute,
                     arguments:
@@ -190,7 +190,9 @@ class _SongWidgetState extends State<SongWidget> {
                   Flexible(
                       fit: FlexFit.tight,
                       child: Text(
-                        "${widget.song.title}",style: TextStyle(fontSize: 18),maxLines: 2,
+                        "${widget.song.title}",
+                        style: TextStyle(fontSize: 18),
+                        maxLines: 2,
                       )),
                   widget.parentWidgetName != "Searched Songs"
                       ? getDownloadIcon()

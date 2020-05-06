@@ -1,11 +1,10 @@
 import 'package:moojik/src/bloc/trendingSongsBloc.dart';
-import 'package:moojik/src/models/SongMode.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:moojik/src/utils/serilizeSongs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<Song>> trendingSongs() async {
+ trendingSongs() async {
   final prefs = await SharedPreferences.getInstance();
   try {
     List<String> stringList = prefs.getStringList("TrendingPage");

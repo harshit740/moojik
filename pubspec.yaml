@@ -23,7 +23,7 @@ dependencies:
   html: ^0.14.0+3
   sqflite:
   path_provider: any
-  just_audio: ^0.1.7
+  just_audio: ^0.1.8
   audio_service:
     path:   ./Libraries/audio_service-0.7.2
   get_it: ^3.1.0
@@ -51,7 +51,6 @@ flutter:
      - assets/play-button.svg
      - assets/pause(1).svg
      - assets/down-group2.svg
-     - assets/Group1(1).svg
      - assets/homeButton.svg
      - assets/searchButton.svg
      - assets/libraryButton.svg
