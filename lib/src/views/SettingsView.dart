@@ -17,7 +17,7 @@ class SettingsView extends StatelessWidget {
                 style: TextStyle(fontSize: 24),
               ),
               Text(
-                "Version 0.2.2",
+                "Version 0.2.2.3",
                 style: TextStyle(fontSize: 24),
               ),
               Row(
