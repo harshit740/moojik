@@ -265,6 +265,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   @override
   void onAudioFocusLost() {
     _audioPlayer.pause();
+    _setState(state: BasicPlaybackState.paused);
   }
 
   @override
@@ -277,7 +278,6 @@ class MyBackgroundTask extends BackgroundAudioTask {
 
   @override
   void onAddQueueItem(MediaItem item) {
-    // we're not actually maintaining a "queue", we're just keeping a map:
     if (!_mediaItems.containsKey(item.extras['youtubeUrl'])) {
       _mediaItems[item.extras['youtubeUrl']] = item;
       _queue.add(item);

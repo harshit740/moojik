@@ -2,7 +2,6 @@ package com.ryanheise.audioservice;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.YoutubeException;
@@ -10,14 +9,13 @@ import com.github.kiulian.downloader.model.YoutubeVideo;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import io.flutter.plugin.common.MethodChannel;
 
 class Youthoob implements Runnable {
     private String url;
     private YoutubeDownloader downloader = new YoutubeDownloader();
-    private ArrayList<String> videoList  = new  ArrayList<String>();
+    private ArrayList<String> videoList  = new  ArrayList<>();
     private MethodChannel channel;
     Youthoob(String url,MethodChannel channel){
         this.channel = channel;
@@ -43,7 +41,6 @@ class Youthoob implements Runnable {
                 channel.invokeMethod("setYoutubeLink",videoList);
             }
         });
-        Log.d("YouthoobService","Work is DOne");
         return;
     }
 }

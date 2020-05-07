@@ -7,7 +7,7 @@ import 'package:moojik/src/models/PlayListModel.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'SongWidget.dart';
+import 'package:moojik/src/UI/SongWidget.dart';
 
 class SongList extends StatefulWidget {
   final List<Song> playList;

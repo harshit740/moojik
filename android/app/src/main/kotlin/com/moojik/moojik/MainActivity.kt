@@ -36,7 +36,7 @@ class MainActivity : FlutterActivity() {
                 }
                 "addToDownloadQueue" -> {
                     result.success(true);
-                    val downloadIntent:Intent = Intent(applicationContext, DownloadService::class.java)
+                    val downloadIntent:Intent = Intent(activity.applicationContext, DownloadService::class.java)
                             .putExtra("youtubeUrl", call.arguments as String)
                     DownloadService.enQueueDownload(context, downloadIntent)
                 }

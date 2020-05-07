@@ -38,7 +38,13 @@ class PlayerViewState extends State<PlayerView>
   bool isDownloading = false;
   bool isLikedSong = false;
   String playingFrom = " ";
-
+  var minRedius;
+  var maxRedius;
+  int virticalMarginBetweenControls;
+  int bodyBottomPadding;
+  var height;
+  var width;
+  var bottomBody = 10;
   void setRepeat(int repeatMode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt("isRepeatMode", repeatMode);
@@ -157,14 +163,9 @@ class PlayerViewState extends State<PlayerView>
   Widget build(BuildContext context) {
     super.build(context);
     var screenSize = MediaQuery.of(context).size;
-    var width = screenSize.width;
-    var height = screenSize.height;
+    width = screenSize.width;
+    height = screenSize.height;
     var hightExludingAppbar = height - appBar().preferredSize.height;
-    var minRedius;
-    var maxRedius;
-    int virticalMarginBetweenControls;
-    int bodyBottomPadding;
-    var bottomBody = 10;
     if (hightExludingAppbar > 660) {
       minRedius = 125;
       maxRedius = 150;

@@ -13,9 +13,6 @@ import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationManagerCompat
 import com.github.kiulian.downloader.OnYoutubeDownloadListener
 import com.github.kiulian.downloader.YoutubeDownloader
-import io.flutter.Log
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.util.PathUtils
 import java.io.File
 import java.io.IOException
 import kotlin.concurrent.thread
@@ -23,7 +20,6 @@ import kotlin.concurrent.thread
 
 class DownloadService : JobIntentService() {
     companion object {
-        lateinit var channel: MethodChannel
         var downloadQueue = HashMap<String, Boolean>()
         val currentQueueSize
             get() = downloadQueue.size;
@@ -43,22 +39,24 @@ class DownloadService : JobIntentService() {
     private lateinit var notification: Notification
 
     override fun onCreate() {
-        try {
-            createNotificationChannel()
-            if (!outDir.exists()) {
-                val mkdirs = outDir.mkdirs()
-                if (!mkdirs) throw IOException("Could not create output directory: ${outDir.absolutePath}")
-            }
-        } catch (e: Exception) {
-        }
         super.onCreate()
+        createNotificationChannel()
+        outDir = File(applicationInfo.dataDir ,"/app_flutter/Moojik/")
+        if (!outDir.exists()) {
+            val mkdirs = outDir.mkdirs()
+            if (!mkdirs) throw IOException("Could not create output directory: ${outDir.absolutePath}")
+        }
     }
 
+
     override fun onDestroy() {
+        (applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).also {
+            it.cancel(2)
+        }
         super.onDestroy()
+        stopSelf()
     }
     override fun onHandleWork(intent: Intent) {
-        outDir = File(PathUtils.getDataDirectory(this), "/Moojik/")
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setSubText("$currentQueueSize Files Downloading")
             builder.setContentTitle("Starting")
@@ -99,7 +97,6 @@ class DownloadService : JobIntentService() {
                     updateDb(youtubeUrl, file.absolutePath, video.details().thumbnails().run { this[this.size - 1] }.toString())
                 }
             }
-
             override fun onError(throwable: Throwable?) {
                 NotificationManagerCompat.from(applicationContext).apply {
                     builder.setContentText("Error Downloading ...")
@@ -112,21 +109,19 @@ class DownloadService : JobIntentService() {
 
 
     fun updateDb(youtubeurl: String, localUrl: String, thumbnailUrl: String) {
-       val file = File(PathUtils.getDataDirectory(this), "MoojkFlux.db")
-       var moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
+       val file = File(applicationInfo.dataDir, "app_flutter/MoojkFlux.db")
+       val moojikDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
         val list = ArrayList<String>()
         list.add(youtubeurl)
         list.add(localUrl)
+        downloadQueue[youtubeurl] = false
         Handler(Looper.getMainLooper()).post {
             MainActivity.updateDownloadComplete(list)
         }
-        downloadQueue[youtubeurl] = false
         val youtubeUrl = "/watch?v=$youtubeurl"
         val query = "update songs set isDownloaded=1 ,localUrl='$localUrl' ,thumbnailUrl='$thumbnailUrl' where youtubeUrl = '$youtubeUrl'"
         moojikDatabase.execSQL(query);
         moojikDatabase.close()
-        moojikDatabase = null;
-        Log.d("Download Service ","kam ho gaya ");
         NotificationManagerCompat.from(applicationContext).apply {
             builder.setContentText("Download Complete")
             builder.setProgress(0, 0, false)
