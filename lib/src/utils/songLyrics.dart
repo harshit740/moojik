@@ -19,7 +19,8 @@ getSongLyrics(String name, String youtubeUrl) async {
           .replaceAll("music", "")
           .replaceAll("video", "")
           .replaceAll("new", "")
-          .replaceAll("song", "");
+          .replaceAll("song", "")
+          .replaceAll(":", "");
       name = name
           .replaceAll("lyrics", "")
           .replaceAll("audio", "")
