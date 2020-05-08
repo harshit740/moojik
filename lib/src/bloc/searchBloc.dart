@@ -1,4 +1,5 @@
 import 'package:moojik/src/models/SongMode.dart';
+import 'package:moojik/src/utils/checkConnectivity.dart';
 import 'package:moojik/src/utils/youtubeSearch.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
@@ -26,9 +27,13 @@ class SearchBloc {
   }
 
   void search(String value) async {
+    if(await checkConnectivity()){
     trigerSearching(true);
     this._songs.sink.add(await searchYoutube(value));
     trigerSearching(false);
+    }else{
+
+    }
   }
 }
 

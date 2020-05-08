@@ -51,7 +51,8 @@ class SearchView extends StatelessWidget {
                                   parentWidgetName: 'Searched Songs',
                                 );
                               }));
-                    } else {
+                    }
+                    else {
                       return Container(
                           child: Center(
                               child: Image(

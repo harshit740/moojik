@@ -45,6 +45,9 @@ class PlayerViewState extends State<PlayerView>
   var height;
   var width;
   var bottomBody = 10;
+  var titleFontSize = 24;
+  var variedIconSize = 0;
+
   void setRepeat(int repeatMode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt("isRepeatMode", repeatMode);
@@ -151,7 +154,10 @@ class PlayerViewState extends State<PlayerView>
   AppBar appBar() {
     return AppBar(
       centerTitle: true,
-      leading: IconButton(icon: Icon(Icons.keyboard_arrow_down), onPressed: () => Navigator.pop(context),),
+      leading: IconButton(
+        icon: Icon(Icons.keyboard_arrow_down),
+        onPressed: () => Navigator.pop(context),
+      ),
       title: Text("Playing from $playingFrom"),
       elevation: 0,
       backgroundColor: colors != null ? colors : Color(0xFF1B262C),
@@ -193,13 +199,14 @@ class PlayerViewState extends State<PlayerView>
       virticalMarginBetweenControls = 0;
       bodyBottomPadding = 0;
       bottomBody = 0;
-    }
-    else if (hightExludingAppbar < 590) {
+    } else if (hightExludingAppbar < 590) {
       minRedius = 80;
       maxRedius = 80;
       virticalMarginBetweenControls = 0;
       bodyBottomPadding = 0;
       bottomBody = 0;
+      titleFontSize = 19;
+      variedIconSize = 10;
     }
     return Scaffold(
         backgroundColor: colors != null ? colors : Color(0xFF1B262C),
@@ -242,7 +249,9 @@ class PlayerViewState extends State<PlayerView>
                                 children: <Widget>[
                                   Container(
                                       padding: EdgeInsets.only(
-                                          left: 10, right: 10, bottom: bottomBody.toDouble()),
+                                          left: 10,
+                                          right: 10,
+                                          bottom: bottomBody.toDouble()),
                                       child: Center(
                                           child: Container(
                                               child: InkWell(
@@ -288,8 +297,10 @@ class PlayerViewState extends State<PlayerView>
                                                   scrollDirection:
                                                       Axis.vertical,
                                                   child: Text(
-                                                    mediaItem !=null ?
-                                                    mediaItem.extras['lyrics']:"No Audio is Beign Played",
+                                                    mediaItem != null
+                                                        ? mediaItem
+                                                            .extras['lyrics']
+                                                        : "No Audio is Beign Played",
                                                     textAlign: TextAlign.center,
                                                     textDirection:
                                                         TextDirection.ltr,
@@ -330,17 +341,21 @@ class PlayerViewState extends State<PlayerView>
                                                 maxLines: 1,
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 24),
+                                                    fontSize: titleFontSize
+                                                        .toDouble()),
                                               ),
                                             )
                                           ] else if (mediaItem == null) ...[
-                                            Text(
-                                              "Welcome Nigga",
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 25),
-                                              textAlign: TextAlign.center,
+                                            Center(
+                                              child: Text(
+                                                "Welcome",
+                                                maxLines: 1,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: titleFontSize
+                                                        .toDouble()),
+                                                textAlign: TextAlign.center,
+                                              ),
                                             ),
                                           ],
                                         ],
@@ -368,7 +383,8 @@ class PlayerViewState extends State<PlayerView>
                                             ? IconButton(
                                                 icon: Icon(
                                                   EvaIcons.heart,
-                                                  size: 35,
+                                                  size: 35 -
+                                                      variedIconSize.toDouble(),
                                                   color: Colors.red,
                                                 ),
                                                 onPressed: () =>
@@ -376,28 +392,36 @@ class PlayerViewState extends State<PlayerView>
                                             : IconButton(
                                                 icon: Icon(
                                                   EvaIcons.heartOutline,
-                                                  size: 35,
+                                                  size: 35 -
+                                                      variedIconSize.toDouble(),
                                                   color: Colors.white,
                                                 ),
                                                 onPressed: () =>
                                                     addInLikedSong(1)),
                                         IconButton(
                                             icon: Icon(Icons.featured_play_list,
-                                                color: Colors.white, size: 35),
+                                                color: Colors.white,
+                                                size: 35 -
+                                                    variedIconSize.toDouble()),
                                             onPressed: () =>
                                                 Navigator.pushNamed(context,
                                                     CurrentPlaylistRoute)),
                                         isDownloading
                                             ? CircularProgressIndicator()
-                                            :mediaItem!=null &&  mediaItem.extras[
-                                                        "isDownloaded"] ==
-                                                    "false"
+                                            : mediaItem != null &&
+                                                    mediaItem.extras[
+                                                            "isDownloaded"] ==
+                                                        "false"
                                                 ? IconButton(
                                                     icon: SvgPicture.asset(
                                                       'assets/down-group2.svg',
                                                       color: Colors.white,
-                                                      width: 60,
-                                                      height: 60,
+                                                      width: 60 -
+                                                          variedIconSize
+                                                              .toDouble(),
+                                                      height: 60 -
+                                                          variedIconSize
+                                                              .toDouble(),
                                                     ),
                                                     onPressed: () =>
                                                         addtoDownload(context))
@@ -419,14 +443,16 @@ class PlayerViewState extends State<PlayerView>
                                           InkWell(
                                             child: Icon(
                                               Icons.shuffle,
-                                              size: 25,
+                                              size: 25 -
+                                                  variedIconSize.toDouble(),
                                             ),
                                             onTap: () {},
                                           ),
                                           FlatButton(
                                             child: Icon(
                                               Icons.skip_previous,
-                                              size: 50,
+                                              size: 50 -
+                                                  variedIconSize.toDouble(),
                                             ),
                                             onPressed: () {
                                               AudioService.skipToPrevious();
@@ -459,7 +485,8 @@ class PlayerViewState extends State<PlayerView>
                                           FlatButton(
                                             child: Icon(
                                               Icons.skip_next,
-                                              size: 50,
+                                              size: 50 -
+                                                  variedIconSize.toDouble(),
                                             ),
                                             onPressed: () {
                                               try {
@@ -588,7 +615,7 @@ class PlayerViewState extends State<PlayerView>
   GestureDetector startButton() => GestureDetector(
         child: Icon(
           Icons.play_circle_filled,
-          size: 50,
+          size: 50 - variedIconSize.toDouble(),
         ),
         onTap: () async {
           if (!AudioService.running) {
@@ -602,8 +629,8 @@ class PlayerViewState extends State<PlayerView>
         child: SvgPicture.asset(
           'assets/play-button.svg',
           color: Colors.white,
-          width: 60,
-          height: 60,
+          width: 60 - variedIconSize.toDouble(),
+          height: 60 - variedIconSize.toDouble(),
         ),
         onTap: AudioService.play,
       );
@@ -612,8 +639,8 @@ class PlayerViewState extends State<PlayerView>
         child: SvgPicture.asset(
           'assets/pause(1).svg',
           color: Colors.white,
-          width: 60,
-          height: 60,
+          width: 60 - variedIconSize.toDouble(),
+          height: 60 - variedIconSize.toDouble(),
         ),
         onTap: AudioService.pause,
       );
@@ -621,7 +648,7 @@ class PlayerViewState extends State<PlayerView>
   GestureDetector stopButton() => GestureDetector(
         child: Icon(
           EvaIcons.stopCircleOutline,
-          size: 60,
+          size: 60 - variedIconSize.toDouble(),
         ),
         onTap: AudioService.stop,
       );
@@ -630,8 +657,9 @@ class PlayerViewState extends State<PlayerView>
     if (mediaItem != null && mediaItem.artUri != null) {
       return CircleAvatar(
         backgroundImage: CachedNetworkImageProvider(
-          mediaItem.artUri.split("?")[0]!=""?mediaItem.artUri.split("?")[0]:mediaItem.artUri
-        ),
+            mediaItem.artUri.split("?")[0] != ""
+                ? mediaItem.artUri.split("?")[0]
+                : mediaItem.artUri),
         backgroundColor: colors,
         foregroundColor: colors,
         maxRadius: maxRedius.toDouble() + 5,

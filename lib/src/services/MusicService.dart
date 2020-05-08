@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:moojik/src/Database.dart';
+import 'package:moojik/src/utils/checkConnectivity.dart';
 import 'package:moojik/src/utils/songLyrics.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,13 +38,14 @@ MediaControl stopControl = MediaControl(
 );
 
 void myBackgroundTaskEntrypoint() {
-  AudioServiceBackground.run(() => MyBackgroundTask());
+  AudioServiceBackground.run(() => MusicService());
 }
 
-class MyBackgroundTask extends BackgroundAudioTask {
+class MusicService extends BackgroundAudioTask {
   static List<MediaItem> _queue = <MediaItem>[];
   final _mediaItems = <String, MediaItem>{};
   int _queueIndex = -1;
+  var prefs;
   AudioPlayer _audioPlayer = new AudioPlayer();
   Completer _completer = Completer();
   BasicPlaybackState _skipState;
@@ -80,6 +82,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   @override
   Future<void> onStart() async {
     firstTime = true;
+    prefs = await SharedPreferences.getInstance();
     var playerStateSubscription = _audioPlayer.playbackStateStream
         .where((state) => state == AudioPlaybackState.completed)
         .listen((state) {
@@ -103,7 +106,6 @@ class MyBackgroundTask extends BackgroundAudioTask {
   }
 
   void _handlePlaybackCompleted() async {
-    final prefs = await SharedPreferences.getInstance();
     if (prefs.getInt("isRepeatMode") == 2) {
       onSeekTo(0);
       onPlay();
@@ -131,6 +133,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
   Future<void> onSkipToPrevious() => _skip(-1);
 
   Future<void> _skip(int offset) async {
+    final isConnected = await checkConnectivity();
     final newPos = _queueIndex + offset;
     if (!(newPos >= 0 && newPos < _queue.length)) {
       if (firstTime) {
@@ -165,18 +168,31 @@ class MyBackgroundTask extends BackgroundAudioTask {
         ? BasicPlaybackState.skippingToNext
         : BasicPlaybackState.skippingToPrevious;
     _setState(state: BasicPlaybackState.connecting);
-    await getLyrics(mediaItem.title);
     if (!mediaItem.id.contains("/watch?v=")) {
-      var duration = await _audioPlayer.setUrl(mediaItem.id);
+      var duration;
+      if (mediaItem.extras["isDownloaded"] == "true" &&
+          mediaItem.id.contains("com.moojik.moojik")) {
+        duration = await _audioPlayer.setFilePath(mediaItem.id);
+      } else {
+        if (isConnected) {
+          duration = await _audioPlayer.setUrl(mediaItem.id);
+        } else {
+          if (hasNext && mediaItem.extras["isDownloaded"] == "true") {
+            return onSkipToNext();
+          } else {
+            onStop();
+          }
+        }
+      }
       mediaItem.duration = duration.inMilliseconds;
       AudioServiceBackground.setMediaItem(mediaItem);
       setSkipState();
       await DBProvider.db.updateLastPlayed(mediaItem.extras['youtubeUrl']);
+      await getLyrics(mediaItem.title);
       return await _updatePaletteGenerator();
     } else {
-      final prefs = await SharedPreferences.getInstance();
       List<String> data = prefs.getStringList(mediaItem.id);
-      if (data != null) {
+      if (data != null && isConnected) {
         if (DateTime.now().difference(DateTime.parse(data[2])).inHours < 5) {
           mediaItem.artUri = data[1];
           mediaItem.id = data[0];
@@ -185,14 +201,33 @@ class MyBackgroundTask extends BackgroundAudioTask {
           AudioServiceBackground.setMediaItem(mediaItem);
           setSkipState();
           await DBProvider.db.updateLastPlayed(mediaItem.extras['youtubeUrl']);
+          await getLyrics(mediaItem.title);
           return await _updatePaletteGenerator();
         } else {
-          AudioServiceBackground.getYoutubeLink(
-              mediaItem.id.split("/watch?v=")[1]);
+          if (isConnected) {
+            AudioServiceBackground.getYoutubeLink(
+                mediaItem.extras['youtubeUrl'].split("/watch?v=")[1]);
+          } else {
+            if (hasNext && mediaItem.extras["isDownloaded"] == "true") {
+              return onSkipToNext();
+            } else {
+              onStop();
+            }
+          }
+          await getLyrics(mediaItem.title);
         }
       } else {
-        AudioServiceBackground.getYoutubeLink(
-            mediaItem.id.split("/watch?v=")[1]);
+        if (isConnected) {
+          AudioServiceBackground.getYoutubeLink(
+              mediaItem.extras['youtubeUrl'].split("/watch?v=")[1]);
+        } else {
+          if (hasNext && mediaItem.extras["isDownloaded"] == "true") {
+            onSkipToNext();
+          } else {
+            onStop();
+          }
+        }
+        await getLyrics(mediaItem.title);
       }
     }
   }
@@ -323,7 +358,7 @@ class MyBackgroundTask extends BackgroundAudioTask {
       prefs.setStringList(mediaItem.extras['youtubeUrl'],
           [details[0], details[1], DateTime.now().toString()]);
     } else {
-       compute(addParsedToQueue,details);
+      await compute(addParsedToQueue, details);
     }
     return await _updatePaletteGenerator();
   }
@@ -338,8 +373,9 @@ class MyBackgroundTask extends BackgroundAudioTask {
   }
 
   getLyrics(String title) async {
-    var lyrics =
-        await getSongLyrics(title.replaceAll(" - ", " ").split(" Duration")[0]);
+    var lyrics = await getSongLyrics(
+        title.replaceAll(" - ", " ").split(" Duration")[0],
+        mediaItem.extras["youtubeUrl"]);
     mediaItem.extras['lyrics'] = lyrics;
     AudioServiceBackground.setMediaItem(mediaItem);
   }

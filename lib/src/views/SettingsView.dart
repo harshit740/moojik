@@ -31,6 +31,11 @@ class SettingsView extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 24),
                         ),
+                        Text(
+                          "FllowUs onFacebook https://www.facebook.com/thegeekflux",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18),
+                        )
                       ],
                     ),
                   ),
@@ -43,6 +48,11 @@ class SettingsView extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 24),
                         ),
+                        Text(
+                          "FllowUs onFacebook https://www.facebook.com/thegraphbox",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18),
+                        )
                       ],
                     ),
                   ),

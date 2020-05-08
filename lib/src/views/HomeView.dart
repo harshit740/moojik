@@ -29,7 +29,7 @@ class HomeView extends StatelessWidget {
                 future: DBProvider.db.getLastPlayed(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData == true) {
-                    return HorizontalSongList(songs: snapshot.data,parentWidgetName: "RecentlyPlayer",);
+                    return HorizontalSongList(songs: snapshot.data,parentWidgetName: "Recently Played",);
                   } else {
                     return  Center(
                       child: CircularProgressIndicator(),
@@ -49,7 +49,7 @@ class HomeView extends StatelessWidget {
                 stream: trendingBloc.getTrendingSongs,
                 builder: (context, snapshot) {
                   if (snapshot.hasData == true) {
-                    return HorizontalSongList(songs: snapshot.data,parentWidgetName: "TrendingSongs",);
+                    return HorizontalSongList(songs: snapshot.data,parentWidgetName: "Trending Songs",);
                   } else {
                     return Center(
                       child: CircularProgressIndicator(),

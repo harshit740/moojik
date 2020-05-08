@@ -54,7 +54,7 @@ class HorizontalSongList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[Icon(Icons.hourglass_empty), Text("Empety")],
+              children: <Widget>[Icon(Icons.hourglass_empty), Text("Empty")],
             ),
           );
   }
