@@ -70,7 +70,7 @@ class DownloadService : JobIntentService() {
             builder.setOngoing(true)
             notify(2, builder.build())
         }
-        video.downloadAsync(video.audioFormats().run { this[this.size - 1] }, outDir, youtubeUrl, object : OnYoutubeDownloadListener {
+        video.downloadAsync(video.audioFormats().run { this[this.size - 1] }, outDir, object : OnYoutubeDownloadListener {
             override fun onDownloading(progress: Int) {
                 Handler(Looper.getMainLooper()).post {
                     MainActivity.updateDownloadProgress(youtubeUrl)

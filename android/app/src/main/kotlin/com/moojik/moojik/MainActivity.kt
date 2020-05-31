@@ -26,6 +26,7 @@ class MainActivity : FlutterActivity() {
         }
     }
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
         flutterEngineInstance = flutterEngine
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
