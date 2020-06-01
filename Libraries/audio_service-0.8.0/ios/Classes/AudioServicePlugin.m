@@ -118,12 +118,12 @@ static MPMediaItemArtwork* artwork = nil;
     // Skipping
     NSNumber *skipForwardInterval = [call.arguments objectForKey:@"fastForwardInterval"];
     NSNumber *skipBackwardInterval = [call.arguments objectForKey:@"rewindInterval"];
-    if (skipForwardInterval > 0) {
+    if (skipForwardInterval.integerValue > 0) {
       [commandCenter.skipForwardCommand setEnabled:YES];
       [commandCenter.skipForwardCommand addTarget: self action:@selector(skipForward:)];
       commandCenter.skipForwardCommand.preferredIntervals = @[skipForwardInterval];
     }
-    if (skipBackwardInterval > 0) {
+    if (skipBackwardInterval.integerValue > 0) {
       [commandCenter.skipBackwardCommand setEnabled:YES];
       [commandCenter.skipBackwardCommand addTarget: self action:@selector(skipBackward:)];
       commandCenter.skipBackwardCommand.preferredIntervals = @[skipBackwardInterval];
@@ -177,6 +177,14 @@ static MPMediaItemArtwork* artwork = nil;
     [commandCenter.skipForwardCommand removeTarget:nil];
     [commandCenter.skipBackwardCommand removeTarget:nil];
     [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nil;
+    state = nil;
+    position = nil;
+    updateTime = nil;
+    speed = nil;
+    artwork = nil;
+    mediaItem = nil;
+    queue = nil;
+    startResult = nil;
     result(@YES);
   } else if ([@"isRunning" isEqualToString:call.method]) {
     if (_running) {
@@ -195,6 +203,8 @@ static MPMediaItemArtwork* artwork = nil;
   } else if ([@"removeQueueItem" isEqualToString:call.method]) {
     [backgroundChannel invokeMethod:@"onRemoveQueueItem" arguments:@[call.arguments]];
     result(@YES);
+  } else if ([@"replaceQueue" isEqualToString:call.method]) {
+    [backgroundChannel invokeMethod:@"onReplaceQueue" arguments:@[call.arguments] result: result];
   } else if ([@"click" isEqualToString:call.method]) {
     [backgroundChannel invokeMethod:@"onClick" arguments:@[call.arguments]];
     result(@YES);
@@ -209,6 +219,9 @@ static MPMediaItemArtwork* artwork = nil;
     result(@YES);
   } else if ([@"playFromMediaId" isEqualToString:call.method]) {
     [backgroundChannel invokeMethod:@"onPlayFromMediaId" arguments:@[call.arguments]];
+    result(@YES);
+  } else if ([@"playMediaItem" isEqualToString:call.method]) {
+    [backgroundChannel invokeMethod:@"onPlayMediaItem" arguments:@[call.arguments]];
     result(@YES);
   } else if ([@"skipToQueueItem" isEqualToString:call.method]) {
     [backgroundChannel invokeMethod:@"onSkipToQueueItem" arguments:@[call.arguments]];
@@ -314,6 +327,7 @@ static MPMediaItemArtwork* artwork = nil;
   if (mediaItem) {
     nowPlayingInfo[MPMediaItemPropertyTitle] = mediaItem[@"title"];
     nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = mediaItem[@"album"];
+    nowPlayingInfo[MPMediaItemPropertyArtist] = mediaItem[@"artist"];
     if (mediaItem[@"duration"] != [NSNull null]) {
       nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = [NSNumber numberWithLongLong: ([mediaItem[@"duration"] longLongValue] / 1000)];
     }

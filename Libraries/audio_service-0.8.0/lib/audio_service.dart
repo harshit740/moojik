@@ -1,12 +1,17 @@
 import 'dart:async';
-import 'dart:io' show  Platform;
+import 'dart:io' show File, Platform;
+import 'dart:isolate';
 import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:rxdart/rxdart.dart';
+
+/// Name of port used to send custom events.
+const _CUSTOM_EVENT_PORT_NAME = 'customEventPort';
 
 /// The different buttons on a headset.
 enum MediaButton {
@@ -212,7 +217,7 @@ class Rating {
 /// audio items.
 class MediaItem {
   /// A unique id
-  String id;
+   String id;
 
   /// The album this media item belongs to
   final String album;
@@ -227,10 +232,10 @@ class MediaItem {
   final String genre;
 
   /// The duration in milliseconds
-  int duration;
+   int duration;
 
   /// The artwork for this media item as a uri
-  String artUri;
+   String artUri;
 
   /// Whether this is playable (i.e. not a folder)
   final bool playable;
@@ -256,7 +261,7 @@ class MediaItem {
   ///
   /// [id], [album] and [title] must not be null, and [id] must be unique for
   /// each instance.
-  MediaItem({
+   MediaItem({
     @required this.id,
     @required this.album,
     @required this.title,
@@ -400,9 +405,6 @@ class AudioService {
 
   static final _browseMediaChildrenSubject = BehaviorSubject<List<MediaItem>>();
 
-  /// An instance of flutter isolate
-  static FlutterIsolate _flutterIsolate;
-
   /// A stream that broadcasts the children of the current browse
   /// media parent.
   static Stream<List<MediaItem>> get browseMediaChildrenStream =>
@@ -425,6 +427,11 @@ class AudioService {
   /// A stream that broadcasts the queue.
   static Stream<List<MediaItem>> get queueStream => _queueSubject.stream;
 
+  static final _customEventSubject = PublishSubject<dynamic>();
+
+  /// A stream that broadcasts custom events sent from the background.
+  static Stream<dynamic> get customEventStream => _customEventSubject.stream;
+
   /// The children of the current browse media parent.
   static List<MediaItem> get browseMediaChildren => _browseMediaChildren;
   static List<MediaItem> _browseMediaChildren;
@@ -443,6 +450,10 @@ class AudioService {
 
   /// True after service stopped and !running.
   static bool _afterStop = false;
+
+  /// Receives custom events from the background audio task.
+  static ReceivePort _customEventReceivePort;
+  static StreamSubscription _customEventSubscription;
 
   /// Connects to the service from your UI so that audio playback can be
   /// controlled.
@@ -503,6 +514,13 @@ class AudioService {
           break;
       }
     });
+    _customEventReceivePort = ReceivePort();
+    _customEventSubscription = _customEventReceivePort.listen((event) {
+      _customEventSubject.add(event);
+    });
+    IsolateNameServer.removePortNameMapping(_CUSTOM_EVENT_PORT_NAME);
+    IsolateNameServer.registerPortWithName(
+        _customEventReceivePort.sendPort, _CUSTOM_EVENT_PORT_NAME);
     await _channel.invokeMethod("connect");
     _running = await _channel.invokeMethod("isRunning");
     _connected = true;
@@ -515,6 +533,9 @@ class AudioService {
   /// Use [AudioServiceWidget] to handle this automatically.
   static Future<void> disconnect() async {
     _channel.setMethodCallHandler(null);
+    _customEventSubscription?.cancel();
+    _customEventSubscription = null;
+    _customEventReceivePort = null;
     await _channel.invokeMethod("disconnect");
     _connected = false;
   }
@@ -546,6 +567,12 @@ class AudioService {
   ///
   /// The [androidNotificationIcon] is specified like an XML resource reference
   /// and defaults to `"mipmap/ic_launcher"`.
+  ///
+  /// If specified, [androidArtDownscaleSize] causes artwork to be downscaled
+  /// to the given resolution in pixels before being displayed in the
+  /// notification and lock screen. If not specified, no downscaling will be
+  /// performed. If the resolution of your artwork is particularly high,
+  /// downscaling can help to conserve memory.
   static Future<bool> start({
     @required Function backgroundTaskEntrypoint,
     String androidNotificationChannelName = "Notifications",
@@ -558,6 +585,7 @@ class AudioService {
     bool androidStopForegroundOnPause = false,
     bool enableQueue = false,
     bool androidStopOnRemoveTask = false,
+    Size androidArtDownscaleSize,
     int fastForwardInterval = 0,
     int rewindInterval = 0,
   }) async {
@@ -581,8 +609,7 @@ class AudioService {
       // TODO: remove dependency on flutter_isolate by either using the
       // FlutterNativeView API directly or by waiting until Flutter allows
       // regular isolates to use method channels.
-      AudioService._flutterIsolate =
-          await FlutterIsolate.spawn(_iosIsolateEntrypoint, callbackHandle);
+      await FlutterIsolate.spawn(_iosIsolateEntrypoint, callbackHandle);
     }
     final success = await _channel.invokeMethod('start', {
       'callbackHandle': callbackHandle,
@@ -598,6 +625,12 @@ class AudioService {
       'androidStopForegroundOnPause': androidStopForegroundOnPause,
       'enableQueue': enableQueue,
       'androidStopOnRemoveTask': androidStopOnRemoveTask,
+      'androidArtDownscaleSize': androidArtDownscaleSize != null
+          ? {
+              'width': androidArtDownscaleSize.width,
+              'height': androidArtDownscaleSize.height
+            }
+          : null,
       'fastForwardInterval': fastForwardInterval,
       'rewindInterval': rewindInterval,
     });
@@ -628,6 +661,20 @@ class AudioService {
     await _channel.invokeMethod('removeQueueItem', _mediaItem2raw(mediaItem));
   }
 
+  /// A convenience method calls [addQueueItem] for each media item in the
+  /// given list.
+  static Future<void> addQueueItems(List<MediaItem> mediaItems) async {
+    for (var mediaItem in mediaItems) {
+      await addQueueItem(mediaItem);
+    }
+  }
+
+  /// Passes through to `onReplaceQueue` in the background task.
+  static Future<void> replaceQueue(List<MediaItem> queue) async {
+    await _channel.invokeMethod(
+        'replaceQueue', queue.map(_mediaItem2raw).toList());
+  }
+
   /// Programmatically simulates a click of a media button on the headset.
   ///
   /// This passes through to `onClick` in the background task.
@@ -656,6 +703,11 @@ class AudioService {
   /// Passes through to 'onPlayFromMediaId' in the background task.
   static Future<void> playFromMediaId(String mediaId) async {
     await _channel.invokeMethod('playFromMediaId', mediaId);
+  }
+
+  /// Passes through to 'onPlayMediaItem' in the background task.
+  static Future<void> playMediaItem(MediaItem mediaItem) async {
+    await _channel.invokeMethod('playMediaItem', _mediaItem2raw(mediaItem));
   }
 
   //static Future<void> playFromSearch(String query, Bundle extras) async {}
@@ -719,7 +771,8 @@ class AudioService {
 
   /// Passes through to `onCustomAction` in the background task.
   ///
-  /// This may be used for your own purposes.
+  /// This may be used for your own purposes. [arguments] can be any data that
+  /// is encodable by `StandardMessageCodec`.
   static Future customAction(String name, [dynamic arguments]) async {
     return await _channel.invokeMethod('$_CUSTOM_PREFIX$name', arguments);
   }
@@ -809,6 +862,9 @@ class AudioServiceBackground {
           String mediaId = args[0];
           task.onPlayFromMediaId(mediaId);
           break;
+        case 'onPlayMediaItem':
+          task.onPlayMediaItem(_raw2mediaItem(call.arguments[0]));
+          break;
         case 'onAddQueueItem':
           task.onAddQueueItem(_raw2mediaItem(call.arguments[0]));
           break;
@@ -817,6 +873,12 @@ class AudioServiceBackground {
           MediaItem mediaItem = _raw2mediaItem(args[0]);
           int index = args[1];
           task.onAddQueueItemAt(mediaItem, index);
+          break;
+        case 'onReplaceQueue':
+          final List args = call.arguments;
+          final List queue = args[0];
+          await task.onReplaceQueue(
+              queue?.map((mediaItem) => _raw2mediaItem(mediaItem))?.toList());
           break;
         case 'onRemoveQueueItem':
           task.onRemoveQueueItem(_raw2mediaItem(call.arguments[0]));
@@ -852,8 +914,9 @@ class AudioServiceBackground {
           break;
         default:
           if (call.method.startsWith(_CUSTOM_PREFIX)) {
-            task.onCustomAction(
+            final result = await task.onCustomAction(
                 call.method.substring(_CUSTOM_PREFIX.length), call.arguments);
+            return result;
           }
           break;
       }
@@ -862,7 +925,7 @@ class AudioServiceBackground {
     await task.onStart();
     await _backgroundChannel.invokeMethod('stopped');
     if (Platform.isIOS) {
-      AudioService._flutterIsolate?.kill();
+      FlutterIsolate.current?.kill();
     }
     _backgroundChannel.setMethodCallHandler(null);
     _state = _noneState;
@@ -939,7 +1002,7 @@ class AudioServiceBackground {
     _mediaItem = mediaItem;
     if (mediaItem.artUri != null) {
       // We potentially need to fetch the art.
-      final fileInfo =  _cacheManager.getFileFromMemory(mediaItem.artUri);
+      final fileInfo = await _cacheManager.getFileFromMemory(mediaItem.artUri);
       String filePath = fileInfo?.file?.path;
       if (filePath == null) {
         // We haven't fetched the art yet, so show the metadata now, and again
@@ -964,11 +1027,9 @@ class AudioServiceBackground {
           'setMediaItem', _mediaItem2raw(mediaItem));
     }
   }
-
   static getYoutubeLink(url) async {
     _backgroundChannel.invokeMethod('getYoutubeLenk', url);
   }
-
   static Future<void> _loadAllArtwork(List<MediaItem> queue) async {
     for (var mediaItem in queue) {
       await _loadArtwork(mediaItem);
@@ -991,7 +1052,7 @@ class AudioServiceBackground {
     return null;
   }
 
-  /// Notify clients that the child media items of [parentMediaId] have
+  /// Notifies clients that the child media items of [parentMediaId] have
   /// changed.
   ///
   /// If [parentMediaId] is unspecified, the root parent will be used.
@@ -1013,6 +1074,17 @@ class AudioServiceBackground {
   /// automatically qualify your app to receive media button events.
   static Future<void> androidForceEnableMediaButtons() async {
     await _backgroundChannel.invokeMethod('androidForceEnableMediaButtons');
+  }
+
+  /// Sends a custom event to the Flutter UI.
+  ///
+  /// The event parameter can contain any data permitted by Dart's
+  /// SendPort/ReceivePort API. Please consult the relevant documentation for
+  /// further information.
+  static void sendCustomEvent(dynamic event) {
+    SendPort sendPort =
+        IsolateNameServer.lookupPortByName(_CUSTOM_EVENT_PORT_NAME);
+    sendPort?.send(event);
   }
 }
 
@@ -1083,13 +1155,29 @@ abstract class BackgroundAudioTask {
   /// a call to [AudioService.play].
   void onPlay() {}
 
-  /// Called when a client has requested to play a specific media item, such as
-  /// via a call to [AudioService.playFromMediaId].
+  /// Called when a client has requested to play a media item by its ID, such
+  /// as via a call to [AudioService.playFromMediaId].
   void onPlayFromMediaId(String mediaId) {}
+
+  /// Called when the Flutter UI has requested to play a given media item
+  /// via a call to [AudioService.playMediaItem].
+  ///
+  /// Note: This method can only be triggered by your Flutter UI. Peripheral
+  /// devices such as Android Auto will instead trigger
+  /// [AudioService.onPlayFromMediaId].
+  void onPlayMediaItem(MediaItem mediaItem) {}
 
   /// Called when a client has requested to add a media item to the queue, such
   /// as via a call to [AudioService.addQueueItem].
   void onAddQueueItem(MediaItem mediaItem) {}
+
+  /// Called when the Flutter UI has requested to replace the queue by the
+  /// given queue.
+  ///
+  /// If you use a queue, your implementation of this method should call
+  /// [AudioServiceBackground.setQueue] to notify all clients that the queue
+  /// has changed.
+  Future<void> onReplaceQueue(List<MediaItem> queue) async {}
 
   /// Called when a client has requested to add a media item to the queue at a
   /// specified position, such as via a request to
@@ -1127,12 +1215,12 @@ abstract class BackgroundAudioTask {
   /// Called when the client has requested to rate the current media item, such as
   /// via a call to [AudioService.setRating].
   void onSetRating(Rating rating, Map<dynamic, dynamic> extras) {}
-//youtube
+  //onSetYotuubeLenk
   void setYotutubeLink(List details) {}
-
   /// Called when a custom action has been sent by the client via
-  /// [AudioService.customAction].
-  void onCustomAction(String name, dynamic arguments) {}
+  /// [AudioService.customAction]. The result of this method will be returned
+  /// to the client.
+  Future<dynamic> onCustomAction(String name, dynamic arguments) async {}
 }
 
 _iosIsolateEntrypoint(int rawHandle) async {

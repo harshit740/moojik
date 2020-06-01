@@ -233,7 +233,7 @@ class MusicService extends BackgroundAudioTask {
   }
 
   @override
-  void onCustomAction(String name, arguments) {
+  Future<void> onCustomAction(String name, arguments) async {
     super.onCustomAction(name, arguments);
     switch (name) {
       case "clearQueue":
@@ -299,8 +299,14 @@ class MusicService extends BackgroundAudioTask {
 
   @override
   void onAudioFocusLost() {
-    _audioPlayer.pause();
+      onPause();
     _setState(state: BasicPlaybackState.paused);
+  }
+
+
+  @override
+  void onAudioFocusGained() {
+    onPlay();
   }
 
   @override

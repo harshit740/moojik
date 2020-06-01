@@ -41,6 +41,5 @@ class Youthoob implements Runnable {
                 channel.invokeMethod("setYoutubeLink",videoList);
             }
         });
-        return;
     }
 }
