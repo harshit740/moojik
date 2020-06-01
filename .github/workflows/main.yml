@@ -14,7 +14,7 @@ jobs:
           java-version: '12.x'
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '1.12.13+hotfix.9'
+          flutter-version: '1.17.0'
       - run: ./.github/scripts/decrypt.sh
         env:
           LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
