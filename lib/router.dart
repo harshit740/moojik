@@ -6,6 +6,7 @@ import 'package:moojik/src/views/SettingsView.dart';
 import 'package:moojik/src/views/HomeView.dart';
 
 import 'package:moojik/routing_constants.dart';
+import 'package:moojik/src/views/SongDetailedView.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -16,6 +17,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
           builder: (context) =>
               PlayListDetailView(playlistItem: detailArgument));
+    case SongDetailedViewRoute:
+      var detailArgument = settings.arguments;
+      return MaterialPageRoute(
+          builder: (context) =>
+              SongDetailedView(songYoutubeUrl: detailArgument));
     case PlayerViewRoute:
       return MaterialPageRoute(builder: (context) => PlayerView());
     case CurrentPlaylistRoute:

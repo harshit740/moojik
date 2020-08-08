@@ -42,6 +42,7 @@ class DownloadService : JobIntentService() {
         super.onCreate()
         createNotificationChannel()
         outDir = File(applicationInfo.dataDir ,"/app_flutter/Moojik/")
+        print(outDir.absolutePath)
         if (!outDir.exists()) {
             val mkdirs = outDir.mkdirs()
             if (!mkdirs) throw IOException("Could not create output directory: ${outDir.absolutePath}")

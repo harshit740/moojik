@@ -172,6 +172,8 @@ class MusicService extends BackgroundAudioTask {
       var duration;
       if (mediaItem.extras["isDownloaded"] == "true" &&
           mediaItem.id.contains("com.moojik.moojik")) {
+        print(mediaItem.id);
+        debugPrint(mediaItem.id);
         duration = await _audioPlayer.setFilePath(mediaItem.id);
       } else {
         if (isConnected) {

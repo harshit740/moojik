@@ -16,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
       if (stringList != null) {
         trendingBloc.addTrendingSongs(await compute(parseVideo, stringList[2]));
       }
-      Map<String, String> headers = {"user-agent": "fdsfds"};
+      Map<String, String> headers = {"user-agent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko; googleweblight) Chrome/38.0.1025.166 Mobile Safari/535.19"};
       var url =
           'https://www.youtube.com/feed/trending?bp=4gIuCggvbS8wNHJsZhIiUExGZ3F1TG5MNTlhbUhuZUdJdnVBQ25XcmhMUHpkMTRRVA%3D%3D';
       var response = await http.get(url, headers: headers);
@@ -26,6 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
         response.body
       ];
       prefs.setStringList("TrendingPage", _stringList);
+      print(_stringList);
       trendingBloc.addTrendingSongs(await compute(parseVideo,response.body));
     }
   } catch (e) {

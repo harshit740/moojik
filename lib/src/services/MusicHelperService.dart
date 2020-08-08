@@ -1,12 +1,15 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:moojik/src/Database.dart';
 import 'package:moojik/src/bloc/playerBloc.dart';
+import 'package:moojik/src/bloc/searchBloc.dart';
 import 'package:moojik/src/models/SongMode.dart';
 import 'package:moojik/src/services/BaseService.dart';
 import 'package:moojik/src/services/MusicService.dart';
 import 'package:moojik/src/utils/checkConnectivity.dart';
-
+import 'package:uni_links/uni_links.dart';
+import 'package:moojik/routing_constants.dart';
 class AudioFun extends BaseService {
   static const platformMethodChannel =
   const MethodChannel('com.moojikflux/music');
@@ -15,6 +18,7 @@ class AudioFun extends BaseService {
 
   AudioFun() {
     platformMethodChannel.setMethodCallHandler(_handleMethod);
+    initPlatformStateForUriUniLinks();
   }
 
   @override
@@ -43,6 +47,15 @@ class AudioFun extends BaseService {
         AudioService.customAction("UpdateMediaItem", call.arguments);
         playerStates.triggerIsDownloading(downloadQueue);
         return new Future.value("");
+        break;
+      case "setYoutubeSearch":
+        List<Song> songs = [];
+        call.arguments[0].asMap().forEach((index,f) async {
+             songs.add(Song(f,"",call.arguments[1][index].toString(),"",false,call.arguments[2][index].toString())) ;
+        });
+    searchBlox.addSongs(songs);
+    searchBlox.trigerSearching(false);
+
     }
   }
 
@@ -95,38 +108,57 @@ class AudioFun extends BaseService {
     }
   }
 
-    addToQueue(Song f, String playlist) async {
-      await AudioService.addQueueItem(MediaItem(
-          id: f.isDownloaded ? f.localUrl : f.youtubeUrl,
-          album: playlist,
-          title: f.title,
-          artUri: f.thumbnailUrl != ""
-              ? f.thumbnailUrl
-              : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
-          extras: {
-            "youtubeUrl": f.youtubeUrl,
-            "isDownloaded": "${f.isDownloaded}"
-          }));
-    }
+  addToQueue(Song f, String playlist) async {
+    await AudioService.addQueueItem(MediaItem(
+        id: f.isDownloaded ? f.localUrl : f.youtubeUrl,
+        album: playlist,
+        title: f.title,
+        artUri: f.thumbnailUrl != ""
+            ? f.thumbnailUrl
+            : "https://99designs-blog.imgix.net/blog/wp-content/uploads/2017/12/attachment_68585523.jpg?auto=format&q=60&fit=max&w=930",
+        extras: {
+          "youtubeUrl": f.youtubeUrl,
+          "isDownloaded": "${f.isDownloaded}"
+        }));
+  }
 
-    @override
-    addToDownload(String youtubeUrl) async {
-      if (!isInTheQueue(youtubeUrl)) {
-        downloadQueue[youtubeUrl.split("/watch?v=")[1]] = true;
-        playerStates.triggerIsDownloading(downloadQueue);
-        await platformMethodChannel.invokeMethod(
-            "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    isInTheQueue(String youtubeUrl) {
-      if (downloadQueue.containsKey(youtubeUrl)) {
-        return true;
-      } else {
-        return false;
-      }
+  @override
+  addToDownload(String youtubeUrl) async {
+    if (!isInTheQueue(youtubeUrl)) {
+      downloadQueue[youtubeUrl.split("/watch?v=")[1]] = true;
+      playerStates.triggerIsDownloading(downloadQueue);
+      await platformMethodChannel.invokeMethod(
+          "addToDownloadQueue", youtubeUrl.split("/watch?v=")[1]);
+      return true;
+    } else {
+      return false;
     }
   }
+
+  isInTheQueue(String youtubeUrl) {
+    if (downloadQueue.containsKey(youtubeUrl)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  initPlatformStateForUriUniLinks() async {
+    // Attach a listener to the Uri links stream
+    getUriLinksStream().listen((Uri uri) {
+      final GlobalKey<NavigatorState> navigatorKey =
+      new GlobalKey<NavigatorState>();
+      Navigator.pushNamed(navigatorKey.currentContext, SongDetailedViewRoute,
+          arguments: uri.toString().split("watch?v=")[0]);
+      debugPrint(uri.toString().split("watch?v=")[0]);
+    }, onError: (err) {
+      debugPrint(err);
+    });
+  }
+
+  @override
+  Future<bool> searchSongs(String query) async {
+    await platformMethodChannel.invokeMethod(
+        "getYoutubeSearch", query);
+  }
+}
