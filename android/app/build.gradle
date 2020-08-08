@@ -41,7 +41,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
-    ndkVersion "21.1.6352462"
+    ndkVersion "21.3.6528147"
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
     defaultConfig {
