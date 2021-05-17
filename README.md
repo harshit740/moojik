@@ -1,4 +1,4 @@
-# Moojik app (Project Abandoned)
+# Moojik app (Project Abandoned It wont work now)
 
 A New Music Player Written in Flutter for android using Youtube as a Music Source for
   1. Playlists
@@ -11,9 +11,8 @@ Big Thanks to
   1. Hitesh Malviya For UI and the GIF for search UI.Follow Him On Dribbel https://dribbble.com/Hitesh18 On Facebook https://www.facebook.com/TheGraphBox
   2. Manish Bajpei For Creating Icons and choosing the Correct UI. Follow Manish on https://dribbble.com/manishbajpai and on LikedIn https://www.linkedin.com/in/manish-bajpai/
 
-
-https://user-images.githubusercontent.com/34886913/118449601-f2744d00-b710-11eb-8a50-da1fb577aeae.mp4
-
+The Below Video is Old
+https://user-images.githubusercontent.com/34886913/118451840-46803100-b713-11eb-9485-2e5f3807d249.mp4
 
 <p float="left">
 <img src="https://user-images.githubusercontent.com/34886913/118444674-13d23a80-b70b-11eb-861d-6854a66d3ac8.jpg" width="40%">
